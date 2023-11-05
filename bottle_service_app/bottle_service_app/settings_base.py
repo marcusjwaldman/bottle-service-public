@@ -37,6 +37,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'authentication',
+    'customer',
+    'distributor',
+    'location',
+    'restaurant',
 ]
 
 MIDDLEWARE = [
@@ -121,3 +126,14 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+AUTH_USER_MODEL = "authentication.BottleServiceUser"
+
+# AUTHENTICATION_BACKENDS = [
+#     'django.contrib.auth.backends.ModelBackend',
+# ]
+
+PASSWORD_MIN_LENGTH = 10
+PASSWORD_MIXED_CASE = True
+PASSWORD_DIGITS = True
+PASSWORD_SYMBOLS = True
