@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 import requests
-from security import PasswordStrength
+from security import PasswordStrength, VerificationCode
 from authentication.enums import BottleServiceAccountType
 from authentication.session import BottleServiceSession
 
@@ -61,13 +61,17 @@ def account_creation(request):
         account_type = request.POST.get('account_type')
         password = request.POST.get('password')
         password_confirm = request.POST.get('password_confirm')
+        verification_code = request.POST.get('verification_code')
 
-        if email and account_type and password:
+        if email and account_type and password and verification_code:
             if password != password_confirm:
                 context = {'error': 'Passwords do not match'}
                 return render(request, 'authentication/account_creation_email.html', context)
             if not PasswordStrength.check_password(password):
                 context = {'error': f'Passwords does not meet strength requirements. Password Rules: {PasswordStrength.password_rules()}'}
+                return render(request, 'authentication/account_creation_email.html', context)
+            if not VerificationCode.check_code(request, verification_code, email):
+                context = {'error': 'Invalid verification code'}
                 return render(request, 'authentication/account_creation_email.html', context)
             user = User.objects.create_user(email=email, account_type=account_type, password=password)
             if user:
@@ -80,5 +84,8 @@ def account_creation(request):
                 context = {'error': 'Email already associated with an account'}
                 return render(request, 'authentication/account_creation_email.html', context)
             else:
+                verification_code = VerificationCode.generate()
+                VerificationCode.store_code(verification_code, email)
+                VerificationCode.notify_code(email, verification_code)
                 context = {'email': email}
                 return render(request, 'authentication/account_creation_acct_pwd.html', context)
