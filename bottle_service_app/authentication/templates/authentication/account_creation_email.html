@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Account - Email</title>
+</head>
+<body>
+    <h1>Create Account</h1>
+    <form method="post">
+        {% csrf_token %}
+        <label for="email">Enter Email:</label>
+        <input type="text" id="email" name="email" required/>
+        <button type="submit">Submit</button>
+    </form>
+    <a href="{% url 'authentication:login' %}">Back to Login</a><br>
+    {% if error %}
+        <p>{{ error }}</p>
+    {% endif %}
+</body>
+</html>
