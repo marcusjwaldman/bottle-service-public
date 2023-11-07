@@ -1,10 +1,30 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Create Account - Create Account</title>
 </head>
 <body>
-
+    <h1>Create Account - Create Account for {{ email }}</h1>
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" id="email" name="email" value="{{ email }}">
+        <label for="account_type">Select an Account Type:</label>
+        <select id="account_type" name="account_type" required>
+            <option value="distributor">Distributor</option>
+            <option value="restaurant">Restaurant</option>
+            <option value="customer" disabled>Customer</option>
+        </select>
+        <label for="password">Enter Password:</label>
+        <input type="password" id="password" name="password" required>
+        <label for="password_confirm">Confirm Password:</label>
+        <input type="password" id="password_confirm" name="password_confirm" required>
+        <label for="verification_code">Enter Verification Code:</label>
+        <input type="text" id="verification_code" name="verification_code" required>
+        <button type="submit">Submit</button>
+    </form>
+    <a href="{% url 'login' %}">Back to Login</a><br>
+    {% if error %}
+        <p>{{ error }}</p>
+    {% endif %}
 </body>
 </html>

@@ -9,6 +9,7 @@ from authentication.managers import BottleServiceUserManager
 from distributor.models import Distributor
 from restaurant.models import Restaurant
 from customer.models import Customer
+import json
 
 
 class BottleServiceUser(AbstractBaseUser, PermissionsMixin):
@@ -35,3 +36,18 @@ class BottleServiceUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return f'{self.email} - {self.account_type} - {'Active' if self.is_active else "Inactive"}'
+
+
+class BottleServiceJSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, BottleServiceUser):
+            return {
+                'account_type': self.account_type,
+                'email': self.email,
+                'is_active': self.is_active,
+                'account_created': self.account_created
+            }
+        return super().default(obj)
+
+
+json.JSONEncoder = BottleServiceJSONEncoder

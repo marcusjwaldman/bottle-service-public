@@ -1,3 +1,5 @@
 from django.shortcuts import render
 
-# Create your views here.
+
+def distributor_home(request):
+    return render(request, 'distributor/distributor_home.html')

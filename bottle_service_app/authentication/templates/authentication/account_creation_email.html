@@ -4,19 +4,11 @@
     <title>Create Account - Email</title>
 </head>
 <body>
-    <h1>Login</h1>
+    <h1>Create Account</h1>
     <form method="post">
         {% csrf_token %}
-        <input type="text" id="email" name="email" required>Enter Email:</input>
-        <label for="account_type">Select an Account Type:</label>
-        <select id="account_type" name="email" required>
-            <option value="distributor">Distributor</option>
-            <option value="restaurant">Restaurant</option>
-            <option value="customer" disabled>Customer</option>
-        </select>
-        <input type="password" id="password" name="password" required>Enter Password:</input>
-        <input type="password" id="password_confirm" name="password_confirm" required>Enter Password:</input>
-        <input type="text" id="verification_code" name="verification_code" required>Enter Email:</input>
+        <label for="email">Enter Email:</label>
+        <input type="text" id="email" name="email" required/>
         <button type="submit">Submit</button>
     </form>
     <a href="{% url 'login' %}">Back to Login</a><br>

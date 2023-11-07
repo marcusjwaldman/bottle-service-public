@@ -68,7 +68,7 @@ class VerificationCode:
         return False
 
     @staticmethod
-    def create_code():
+    def generate():
         if settings.VERIFICATION_CODE_LENGTH:
             verification_len = settings.VERIFICATION_CODE_LENGTH
         else:

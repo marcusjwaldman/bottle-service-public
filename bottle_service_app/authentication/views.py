@@ -1,9 +1,10 @@
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 import requests
-from security import PasswordStrength, VerificationCode
+from .security import PasswordStrength, VerificationCode
 from authentication.enums import BottleServiceAccountType
 from authentication.session import BottleServiceSession
+from authentication.models import BottleServiceUser
 
 login_page = 'authentication/login.html'
 
@@ -32,7 +33,11 @@ def login(request):
         email = request.POST.get('email')
         password = request.POST.get('password')
 
-        user = User.objects.get(email=email)
+        try:
+            user = BottleServiceUser.objects.get(email=email)
+        except BottleServiceUser.DoesNotExist:
+            context = {'error': 'Incorrect email'}
+            return render(request, login_page, context)
 
         if not user.check_password(password):
             context = {'error': 'Incorrect password'}
@@ -58,10 +63,15 @@ def account_creation(request):
         return render(request, 'authentication/account_creation_email.html')
     elif request.method == "POST":
         email = request.POST.get('email')
+        print(f'email: {email}')
         account_type = request.POST.get('account_type')
+        print(f'account_type: {account_type}')
         password = request.POST.get('password')
+        print(f'password: {password}')
         password_confirm = request.POST.get('password_confirm')
+        print(f'password_confirm: {password_confirm}')
         verification_code = request.POST.get('verification_code')
+        print(f'verification_code: {verification_code}')
 
         if email and account_type and password and verification_code:
             if password != password_confirm:
@@ -73,19 +83,19 @@ def account_creation(request):
             if not VerificationCode.check_code(request, verification_code, email):
                 context = {'error': 'Invalid verification code'}
                 return render(request, 'authentication/account_creation_email.html', context)
-            user = User.objects.create_user(email=email, account_type=account_type, password=password)
+            user = BottleServiceUser.objects.create_user(email=email, account_type=account_type, password=password)
             if user:
                 return redirect('/')
             else:
                 context = {'error': 'Could not create account. Account with this email may already exists.'}
                 return render(request, 'authentication/account_creation_email.html', context)
         elif email:
-            if User.objects.get(email=email):
+            if BottleServiceUser.objects.filter(email=email).exists():
                 context = {'error': 'Email already associated with an account'}
                 return render(request, 'authentication/account_creation_email.html', context)
             else:
                 verification_code = VerificationCode.generate()
-                VerificationCode.store_code(verification_code, email)
-                VerificationCode.notify_code(email, verification_code)
+                VerificationCode.store_code(request, verification_code, email)
+                VerificationCode.notify_code(request, email, verification_code)
                 context = {'email': email}
                 return render(request, 'authentication/account_creation_acct_pwd.html', context)
