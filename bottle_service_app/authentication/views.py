@@ -10,13 +10,13 @@ login_page = 'authentication/login.html'
 
 
 def redirect_to_account_type(request, account_type):
-    if account_type == BottleServiceAccountType.DISTRIBUTOR:
+    if BottleServiceAccountType.DISTRIBUTOR.equals_string(account_type):
         return redirect('/distributor')
-    elif account_type == BottleServiceAccountType.RESTAURANT:
+    elif BottleServiceAccountType.RESTAURANT.equals_string(account_type):
         return redirect('/restaurant')
-    elif account_type == BottleServiceAccountType.CUSTOMER:
+    elif BottleServiceAccountType.CUSTOMER.equals_string(account_type):
         return redirect('/customer')
-    elif account_type == BottleServiceAccountType.ADMIN:
+    elif BottleServiceAccountType.ADMIN.equals_string(account_type):
         return redirect('/administration')
     else:
         context = {'error': 'Invalid account type'}
@@ -25,9 +25,17 @@ def redirect_to_account_type(request, account_type):
 
 def login(request):
     if request.method == "GET":
-        if BottleServiceSession.has_user(request) and BottleServiceSession.get_user(request).is_active:
-            account_type = BottleServiceSession.get_account_type(request)
-            return redirect_to_account_type(request, account_type)
+        # BottleServiceSession.clear_session(request)
+        if BottleServiceSession.has_user(request):
+            user_map = BottleServiceSession.get_user(request)
+            try:
+                user = BottleServiceUser.objects.get(id=user_map['id'])
+            except BottleServiceUser.DoesNotExist:
+                return render(request, login_page)
+            print(f'user: {user}')
+            if user.is_active:
+                account_type = user.account_type
+                return redirect_to_account_type(request, account_type)
         return render(request, login_page)
     elif request.method == "POST":
         email = request.POST.get('email')
@@ -54,7 +62,7 @@ def login(request):
 
 
 def logout(request):
-    BottleServiceAccountType.clear_session(request)
+    BottleServiceSession.clear_session(request)
     return redirect('/')
 
 

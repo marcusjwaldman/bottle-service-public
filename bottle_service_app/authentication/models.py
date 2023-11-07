@@ -41,11 +41,12 @@ class BottleServiceUser(AbstractBaseUser, PermissionsMixin):
 class BottleServiceJSONEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, BottleServiceUser):
+            print(f'BottleServiceUser: {obj}')
             return {
-                'account_type': self.account_type,
-                'email': self.email,
-                'is_active': self.is_active,
-                'account_created': self.account_created
+                'id': obj.id,
+                'account_type': obj.account_type,
+                'email': obj.email,
+                'is_active': obj.is_active
             }
         return super().default(obj)
 

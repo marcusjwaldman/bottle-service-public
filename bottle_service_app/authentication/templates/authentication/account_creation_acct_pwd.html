@@ -22,7 +22,7 @@
         <input type="text" id="verification_code" name="verification_code" required>
         <button type="submit">Submit</button>
     </form>
-    <a href="{% url 'login' %}">Back to Login</a><br>
+    <a href="{% url 'authentication:login' %}">Back to Login</a><br>
     {% if error %}
         <p>{{ error }}</p>
     {% endif %}

@@ -11,7 +11,7 @@
         <input type="password" id="password" name="password">Enter Password:</input>
         <button type="submit">Submit</button>
     </form>
-    <a href="{% url 'account_creation' %}">Create New Account</a><br>
+    <a href="{% url 'authentication:account_creation' %}">Create New Account</a><br>
     {% if error %}
         <p>{{ error }}</p>
     {% endif %}
