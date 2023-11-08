@@ -12,6 +12,8 @@ class BottleServiceAccountType(Enum):
         return [(key.value, key.name) for key in cls]
 
     def equals_string(self, other):
+        if self == other:
+            return True
         if self.value == other:
             return True
         if self.name == other:
