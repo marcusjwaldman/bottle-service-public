@@ -5,6 +5,7 @@ from .settings_base import *
 import os
 
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+ALLOWED_HOSTS = ['*']
 
 PASSWORD_MIN_LENGTH = 12
 PASSWORD_MIXED_CASE = True
