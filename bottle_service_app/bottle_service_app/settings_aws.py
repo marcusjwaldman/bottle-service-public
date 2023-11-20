@@ -3,9 +3,10 @@
 
 from .settings_base import *
 import os
+from bottle_service_app.tools import split_string
 
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = split_string(os.environ.get('DJANGO_ALLOWED_HOSTS'))
 
 PASSWORD_MIN_LENGTH = 12
 PASSWORD_MIXED_CASE = True
