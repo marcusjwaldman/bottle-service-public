@@ -1,5 +1,6 @@
 # Django local settings for bottle_service_app project.
 # DJANGO_SETTINGS_MODULE = 'bottle_service_app.settings_local'
+import os
 
 from .settings_base import *
 
@@ -8,3 +9,6 @@ PASSWORD_MIXED_CASE = True
 PASSWORD_DIGITS = True
 PASSWORD_SYMBOLS = False
 VERIFICATION_CODE_LENGTH = 4
+
+MAIL_API_KEY = os.environ.get('MAIL_API_KEY')
+MAIL_SENDER = os.environ.get('MAIL_SENDER')
