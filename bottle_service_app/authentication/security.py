@@ -3,6 +3,8 @@ import django
 from django.conf import settings
 import random
 
+from bottle_service_app.tools import EmailMessager
+
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "bottle_service_app.settings")
 django.setup()
 
@@ -88,3 +90,5 @@ class VerificationCode:
     @staticmethod
     def notify_code(request, email, code):
         print('Email: ', email, 'Code: ', code)
+        emailMessager = EmailMessager(settings.MAIL_API_KEY, settings.MAIL_SENDER)
+        emailMessager.send_email(email, 'Your verification code', f'Verification code: {code}')
