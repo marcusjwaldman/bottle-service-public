@@ -23,3 +23,17 @@ class BottleServiceAccountType(Enum):
         if f'{self.__class__.__name__}.{self.name}' == other:
             return True
         return False
+
+    @staticmethod
+    def get_enum_from_string(string_to_match):
+        for enum in BottleServiceAccountType:
+            if enum.equals_string(string_to_match):
+                return enum
+        return None
+
+    @staticmethod
+    def get_name_from_string(string_to_match):
+        for enum in BottleServiceAccountType:
+            if enum.equals_string(string_to_match):
+                return enum.name
+        return None
