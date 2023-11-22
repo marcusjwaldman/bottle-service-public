@@ -37,6 +37,10 @@ class BottleServiceUser(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return f'{self.email} - {self.account_type} - {"Active" if self.is_active else "Inactive"}'
 
+    @staticmethod
+    def dict_to_user(user_dict):
+        return BottleServiceUser(**user_dict)
+
 
 class BottleServiceJSONEncoder(json.JSONEncoder):
     def default(self, obj):

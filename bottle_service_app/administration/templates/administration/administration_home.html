@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Administration</title>
+</head>
+<body>
+    <h1>Administration</A></h1>
+    {% for user in users %}
+        <p>{{ user }}</p>
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" id="email" name="email" value="{{ user.email }}">
+        {% if user.is_active %}
+        <input type="hidden" id="action1" name="action" value="deactivate">
+        <button type="submit">Deactivate</button>
+        {% else %}
+        <input type="hidden" id="action2" name="action" value="activate">
+        <button type="submit">Activate</button>
+        {% endif %}
+    </form>
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" id="email2" name="email" value="{{ user.email }}">
+        <input type="hidden" id="action3" name="action" value="terminate">
+        <button type="submit">Terminate</button>
+    </form>
+
+
+    {% endfor %}
+    <a href="{% url 'authentication:logout' %}">Logout</a>
+</body>
+</html>
