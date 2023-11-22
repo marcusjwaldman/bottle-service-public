@@ -1,3 +1,6 @@
+from authentication.models import BottleServiceUser
+
+
 class BottleServiceSession:
     user_obj_key = 'user_obj'
 
@@ -7,7 +10,13 @@ class BottleServiceSession:
 
     @staticmethod
     def get_user(request):
-        return request.session.get(BottleServiceSession.user_obj_key, None)
+        user = request.session.get(BottleServiceSession.user_obj_key, None)
+        if not user:
+            return None
+        if not isinstance(user, BottleServiceUser):
+            user_dict = user
+            user = BottleServiceUser.dict_to_user(user_dict)
+        return user
 
     @staticmethod
     def get_account_type(request):

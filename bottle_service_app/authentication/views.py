@@ -27,16 +27,20 @@ def login(request):
     if request.method == "GET":
         # BottleServiceSession.clear_session(request)
         if BottleServiceSession.has_user(request):
-            user_map = BottleServiceSession.get_user(request)
+            user_stored = BottleServiceSession.get_user(request)
             try:
-                user = BottleServiceUser.objects.get(id=user_map['id'])
+                user = BottleServiceUser.objects.get(id=user_stored.id)
             except BottleServiceUser.DoesNotExist:
-                return render(request, login_page)
-            print(f'user: {user}')
+                context = {'error': 'User not found'}
+                return render(request, login_page, context)
             if user.is_active:
                 account_type = user.account_type
                 return redirect_to_account_type(request, account_type)
-        return render(request, login_page)
+            else:
+                context = {'error': 'User not active'}
+                return render(request, login_page, context)
+        else:
+            return render(request, login_page)
     elif request.method == "POST":
         email = request.POST.get('email')
         password = request.POST.get('password')
