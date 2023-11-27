@@ -6,6 +6,14 @@
 </head>
 <body>
     <h1>Distributor</h1>
+    {% if distributor %}
+    <p>Details:</p>
+    <p>Name: {{ distributor.name }}</p>
+    <p>Description: {{ distributor.description }}</p>
+    <p>Address: {{ distributor.address }}</p>
+    {% endif %}
+
+    <a href="{% url 'distributor_profile' %}">Profile</a><br>
     <a href="{% url 'authentication:logout' %}">Logout</a>
 </body>
 </html>
