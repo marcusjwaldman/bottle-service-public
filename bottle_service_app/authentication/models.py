@@ -37,6 +37,10 @@ class BottleServiceUser(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return f'{self.email} - {self.account_type} - {"Active" if self.is_active else "Inactive"}'
 
+    @property
+    def accnt_type(self):
+        return BottleServiceAccountType.get_enum_from_string(self.account_type)
+
     @staticmethod
     def dict_to_user(user_dict):
         return BottleServiceUser(**user_dict)

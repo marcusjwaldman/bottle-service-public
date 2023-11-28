@@ -1,3 +1,4 @@
+from authentication.enums import BottleServiceAccountType
 from authentication.models import BottleServiceUser
 
 
@@ -16,13 +17,15 @@ class BottleServiceSession:
         if not isinstance(user, BottleServiceUser):
             user_dict = user
             user = BottleServiceUser.dict_to_user(user_dict)
+        user = BottleServiceUser.objects.prefetch_related( 'distributor', 'restaurant', 'customer',
+                                                           'distributor__address').get(pk=user.id)
         return user
 
     @staticmethod
     def get_account_type(request):
         user_obj = BottleServiceSession.get_user(request)
         if user_obj:
-            return user_obj.account_type
+            return BottleServiceAccountType.get_enum_from_string(user_obj.account_type)
         return None
 
     @staticmethod

@@ -2,10 +2,69 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Distributor</title>
+    <title>Distributor Profile</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-color: #f8f8f8;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        p {
+            margin-bottom: 10px;
+        }
+
+        a {
+            text-decoration: none;
+            color: #007BFF;
+            margin-right: 10px;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .address {
+            margin-left: 20px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Distributor</h1>
-    <a href="{% url 'authentication:logout' %}">Logout</a>
+    <h1>Distributor Profile - {{ user.email }}</h1>
+
+    {% if distributor %}
+            <p><strong>Name:</strong> {{ distributor.name }}</p>
+            <p><strong>Description:</strong> {{ distributor.description }}</p>
+            <p><strong>Address:</strong></p>
+            <div class="address">
+                {% if distributor.address %}
+                    <p><strong>Street:</strong> {{ distributor.address.address }}</p>
+                    <p><strong>City:</strong> {{ distributor.address.city }}</p>
+                    <p><strong>State:</strong> {{ distributor.address.state }}</p>
+                    <p><strong>Zip:</strong> {{ distributor.address.zip }}</p>
+                {% else %}
+                    <p><strong>Address:</strong> None</p>
+                {% endif %}
+            </div>
+            <p><strong>Preference:</strong></p>
+            <div class="address">
+                {% if distributor.locomotion %}
+                    <p><strong>Locomotion Type:</strong> {{ distributor.locomotion }}</p>
+                    <p><strong>Max Minutes to Restaurant:</strong> {{ distributor.minutes_distance }}</p>
+                {% else %}
+                    <p><strong>Preference:</strong> None</p>
+                {% endif %}
+            </div>
+    {% endif %}
+
+    <div>
+        <a href="{% url 'distributor_profile' %}">Edit Profile</a>
+        <a href="{% url 'authentication:logout' %}">Logout</a>
+    </div>
 </body>
 </html>
