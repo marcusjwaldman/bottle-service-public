@@ -11,7 +11,7 @@ from .models import Distributor
 def distributor_home(request):
     user = BottleServiceSession.get_user(request)
     if user is not None:
-        distributor = Distributor.objects.get(pk=user.distributor_id)
+        distributor = user.distributor
         if distributor is not None:
             return render(request, 'distributor/distributor_home.html', {'distributor': distributor,
                                                                          'user': user})
@@ -36,9 +36,10 @@ def distributor_profile(request):
 
         if address_form.is_valid() and distributor_form.is_valid():
             address = address_form.save(commit=False)
-            geo_location = GeoLocation.generate_from_address(address)
-            address.latitude = geo_location.latitude
-            address.longitude = geo_location.longitude
+            geoLocation = GeoLocation()
+            latitude, longitude = geoLocation.generate_from_address(address)
+            address.latitude = latitude
+            address.longitude = longitude
             address.save()
             distributor = distributor_form.save(commit=False)
             distributor.address = address
