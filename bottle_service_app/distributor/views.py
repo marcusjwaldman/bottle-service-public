@@ -13,7 +13,8 @@ def distributor_home(request):
     if user is not None:
         distributor = Distributor.objects.get(pk=user.distributor_id)
         if distributor is not None:
-            return render(request, 'distributor/distributor_home.html', {'distributor': distributor})
+            return render(request, 'distributor/distributor_home.html', {'distributor': distributor,
+                                                                         'user': user})
     return render(request, 'distributor/distributor_home.html')
 
 

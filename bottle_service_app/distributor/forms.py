@@ -12,4 +12,4 @@ class AddressForm(forms.ModelForm):
 class DistributorForm(forms.ModelForm):
     class Meta:
         model = Distributor
-        fields = ['name', 'description']
+        fields = ['name', 'description', 'locomotion', 'minutes_distance']
