@@ -5,9 +5,9 @@ from location.models import Address
 
 
 class LocomotionType(models.Choices):
-    WALK = 'walk'
-    BICYCLE = 'bike'
-    CAR = 'car'
+    WALK = 'walking'
+    BICYCLE = 'bicycling'
+    CAR = 'driving'
 
 
 class Distributor(models.Model):
