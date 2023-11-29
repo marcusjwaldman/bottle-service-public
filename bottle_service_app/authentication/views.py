@@ -75,15 +75,10 @@ def account_creation(request):
         return render(request, 'authentication/account_creation_email.html')
     elif request.method == "POST":
         email = request.POST.get('email')
-        print(f'email: {email}')
         account_type = request.POST.get('account_type')
-        print(f'account_type: {account_type}')
         password = request.POST.get('password')
-        print(f'password: {password}')
         password_confirm = request.POST.get('password_confirm')
-        print(f'password_confirm: {password_confirm}')
         verification_code = request.POST.get('verification_code')
-        print(f'verification_code: {verification_code}')
 
         if email and account_type and password and verification_code:
             if password != password_confirm:
