@@ -5,6 +5,8 @@ from authentication.enums import BottleServiceAccountType
 from authentication.session import BottleServiceSession
 from distributor.forms import AddressForm
 from location.tools import GeoLocation
+from partners.matches import PartnerMatch
+from partners.models import Partners
 from restaurant.forms import RestaurantForm
 
 
@@ -14,8 +16,9 @@ def restaurant_home(request):
     if user is not None:
         restaurant = user.restaurant
         if restaurant is not None:
+            partner_list = Partners.objects.filter(restaurant=restaurant)
             return render(request, 'restaurant/restaurant_home.html', {'restaurant': restaurant,
-                                                                         'user': user})
+                                                                         'user': user, 'partner_list': partner_list})
     return render(request, 'restaurant/restaurant_home.html')
 
 
@@ -42,6 +45,10 @@ def restaurant_profile(request):
             restaurant = restaurant_form.save(commit=False)
             restaurant.address = address
             restaurant.save()
+
+            Partners.objects.filter(restaurant=restaurant).delete()
+            partner_match = PartnerMatch()
+            partner_list = partner_match.match_restaurant(restaurant)
 
             return redirect('/restaurant')
     else:

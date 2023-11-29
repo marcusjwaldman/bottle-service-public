@@ -60,6 +60,9 @@
                 {% endif %}
             </div>
     {% endif %}
+    <div>
+        {% include 'partners/partner_matches_sub.html' with partner_list=partner_list %}
+    </div>
 
     <div>
         <a href="{% url 'restaurant_profile' %}">Edit Profile</a>

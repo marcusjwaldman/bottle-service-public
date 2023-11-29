@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'location',
     'restaurant',
     'administration',
+    'partners'
 ]
 
 MIDDLEWARE = [

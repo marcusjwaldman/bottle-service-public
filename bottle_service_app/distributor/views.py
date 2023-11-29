@@ -3,6 +3,8 @@ from authentication.decorators import bottle_service_auth
 from authentication.enums import BottleServiceAccountType
 from authentication.session import BottleServiceSession
 from location.tools import GeoLocation
+from partners.matches import PartnerMatch
+from partners.models import Partners
 from .forms import AddressForm, DistributorForm
 from .models import Distributor
 
@@ -13,8 +15,9 @@ def distributor_home(request):
     if user is not None:
         distributor = user.distributor
         if distributor is not None:
+            partner_list = Partners.objects.filter(distributor=distributor)
             return render(request, 'distributor/distributor_home.html', {'distributor': distributor,
-                                                                         'user': user})
+                                                                         'user': user, 'partner_list': partner_list})
     return render(request, 'distributor/distributor_home.html')
 
 
@@ -44,6 +47,10 @@ def distributor_profile(request):
             distributor = distributor_form.save(commit=False)
             distributor.address = address
             distributor.save()
+
+            Partners.objects.filter(distributor=distributor).delete()
+            partner_match = PartnerMatch()
+            partner_list = partner_match.match_distributor(distributor)
 
             return redirect('/distributor')
     else:

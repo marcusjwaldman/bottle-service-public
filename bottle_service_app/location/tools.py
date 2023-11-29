@@ -43,4 +43,4 @@ class GeoLocation:
                 return None
         except Exception as e:
             print(f"Error: {e}")
-            return None
+            raise Exception(f"No value returned from Google Maps Distance Matrix. Error: {e}")

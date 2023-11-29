@@ -1,0 +1,18 @@
+<!-- your_app/templates/your_app/partner_match_list.html -->
+<br>
+{% for partner in partner_list %}
+  <div>
+    <h3>Matched Pair</h3>
+    <p><strong>Distributor:</strong> {{ partner.distributor.name }}</p>
+    <p><strong>Restaurant:</strong> {{ partner.restaurant.name }}</p>
+    <p><strong>Status:</strong> {{ partner.get_status_display }}</p>
+    <p><strong>Locomotion:</strong> {{ partner.get_locomotion_display }}</p>
+    <p><strong>Minutes Distance:</strong> {{ partner.minutes_distance }}</p>
+  </div>
+  <hr>
+{% empty %}
+  <div>
+    <h3>Matched Pairs</h3>
+    <p>No matched pairs found.</p>
+  </div>
+{% endfor %}
