@@ -13,12 +13,38 @@
     <h3>Matched Pair</h3>
   <div class="scrollable-block">
 {% for partner in partner_list %}
+      {% if not forloop.first %}
+     <hr>
+      {% endif %}
+      {% if match_type != 'distributor' %}
     <p><strong>Distributor:</strong> {{ partner.distributor.name }}</p>
+      {% endif %}
+      {% if match_type != 'restaurant' %}
     <p><strong>Restaurant:</strong> {{ partner.restaurant.name }}</p>
+      {% endif %}
     <p><strong>Status:</strong> {{ partner.get_status_display }}</p>
     <p><strong>Locomotion:</strong> {{ partner.get_locomotion_display }}</p>
     <p><strong>Minutes Distance:</strong> {{ partner.minutes_distance }}</p>
-    <hr>
+    <p>
+        {% if partner.status == 'matched' %}
+            <a href="{% url 'partner_update_status' request_type='match' partner_id=partner.id %}">Request Match</a>
+            <a href="{% url 'partner_update_status' request_type='reject' partner_id=partner.id %}">Reject Match</a>
+        {% endif %}
+        {% if partner.status == 'pending_distributor' and match_type == 'distributor' or partner.status == 'pending_restaurant' and match_type == 'restaurant' %}
+            <a href="{% url 'partner_update_status' request_type='accept' partner_id=partner.id %}">Accept Match</a>
+            <a href="{% url 'partner_update_status' request_type='reject' partner_id=partner.id %}">Reject Match</a>
+        {% endif %}
+        {% if partner.status == 'pending_distributor' and match_type == 'restaurant' or partner.status == 'pending_restaurant' and match_type == 'distributor' %}
+            <a href="{% url 'partner_update_status' request_type='cancel' partner_id=partner.id %}">Cancel Request</a>
+        {% endif %}
+        {% if partner.status == 'rejected_by_distributor' and match_type == 'distributor' or partner.status == 'rejected_by_restaurant' and match_type == 'restaurant' %}
+            <a href="{% url 'partner_update_status' request_type='reopen' partner_id=partner.id %}">Reopen Match</a>
+        {% endif %}
+        {% if partner.status == 'approved' %}
+            <a href="{% url 'partner_update_status' request_type='dissolve' partner_id=partner.id %}">Dissolve Match</a>
+        {% endif %}
+    </p>
+
 {% empty %}
     <h3>Matched Pairs</h3>
     <p>No matched pairs found.</p>
