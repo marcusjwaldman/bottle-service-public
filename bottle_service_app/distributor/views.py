@@ -24,6 +24,7 @@ def distributor_home(request):
 # myapp/views.py
 
 
+@bottle_service_auth(roles=[BottleServiceAccountType.DISTRIBUTOR])
 def distributor_profile(request):
     user = BottleServiceSession.get_user(request)
     if user is not None:
