@@ -30,3 +30,7 @@ class Partners(models.Model):
                 name='partner_minutes_distance_positive_constraint'
             )
         ]
+
+    @property
+    def status_enum(self):
+        return PartnerStatus(self.status)

@@ -3,19 +3,12 @@ from django.shortcuts import render, redirect
 from authentication.decorators import bottle_service_auth
 from authentication.enums import BottleServiceAccountType
 from authentication.session import BottleServiceSession
-from distributor.forms import AddressForm
-from location.tools import GeoLocation
-from partners.matches import PartnerMatch
 from partners.models import Partners
-from restaurant.forms import RestaurantForm
 
 
-@bottle_service_auth(roles=[BottleServiceAccountType.RESTAURANT, BottleServiceAccountType.DISTRIBUTOR])
-def partner_update_status(request, request_type, partner_id):
-    user = BottleServiceSession.get_user(request)
+def update_status(user, request_type, partner_id):
     partner = Partners.objects.get(id=partner_id)
     current_status = partner.status
-
     if user is not None:
         if user.account_type == BottleServiceAccountType.RESTAURANT:
             if user.restaurant.id != partner.restaurant.id:
@@ -104,6 +97,13 @@ def partner_update_status(request, request_type, partner_id):
                     partner.save()
                 else:
                     raise Exception("Matched can only be reopened if rejected by partner")
+
+
+@bottle_service_auth(roles=[BottleServiceAccountType.RESTAURANT, BottleServiceAccountType.DISTRIBUTOR])
+def partner_update_status(request, request_type, partner_id):
+    user = BottleServiceSession.get_user(request)
+
+    update_status(user, request_type, partner_id)
 
     referring_page = request.META.get('HTTP_REFERER')
 
