@@ -3,8 +3,9 @@ from authentication.decorators import bottle_service_auth
 from authentication.enums import BottleServiceAccountType
 from authentication.session import BottleServiceSession
 from location.tools import GeoLocation
+from partners.forms import MenuItemForm
 from partners.matches import PartnerMatch
-from partners.models import Partners
+from partners.models import Partners, Menu, PartnerStatus, MenuItem
 from .forms import AddressForm, DistributorForm
 from .models import Distributor
 
@@ -63,3 +64,60 @@ def distributor_profile(request):
             distributor_form = DistributorForm()
 
     return render(request, 'distributor/distributor_profile.html', {'address_form': address_form, 'distributor_form': distributor_form})
+
+
+@bottle_service_auth(roles=[BottleServiceAccountType.DISTRIBUTOR])
+def distributor_menus(request):
+    user = BottleServiceSession.get_user(request)
+    if user is not None:
+        if request.method == 'GET':
+            distributor = user.distributor
+
+            menu_list = Menu.objects.filter(distributor=distributor)
+            partners = Partners.objects.filter(distributor=distributor, status=PartnerStatus.APPROVED)
+            return render(request, 'distributor/distributor_menus.html', {'user': user,
+                                                                      'menu_list': menu_list, 'partners': partners})
+
+
+@bottle_service_auth(roles=[BottleServiceAccountType.DISTRIBUTOR])
+def distributor_add_menu(request):
+    user = BottleServiceSession.get_user(request)
+    if user is not None:
+        distributor = user.distributor
+
+        if request.method == 'POST':
+            partner_id = request.POST.get('partner')
+            partner = Partners.objects.get(id=partner_id)
+            menu = Menu.objects.create(distributor=distributor, restaurant=partner.restaurant)
+
+    return redirect('/distributor/distributor-menus')
+
+
+@bottle_service_auth(roles=[BottleServiceAccountType.DISTRIBUTOR])
+def distributor_edit_menu(request, menu_id):
+    user = BottleServiceSession.get_user(request)
+    if user is not None:
+
+        if request.method == 'GET':
+            menu = Menu.objects.get(id=menu_id)
+            menu_items = MenuItem.objects.filter(parent_menu=menu)
+            menu_item_form = MenuItemForm()
+
+            return render(request, 'distributor/distributor_edit_menu.html', {'menu': menu,
+                                                                               'menu_items': menu_items,
+                                                                               'menu_item_form': menu_item_form})
+
+        if request.method == 'POST':
+            menu = Menu.objects.get(id=menu_id)
+            menu_item_form = MenuItemForm(request.POST)
+            menu_item = menu_item_form.save(commit=False)
+            menu_item.parent_menu = menu
+            menu_item.save()
+            menu_item_form = MenuItemForm()
+            menu_items = MenuItem.objects.filter(parent_menu=menu)
+
+            return render(request, 'distributor/distributor_edit_menu.html', {'menu': menu,
+                                                                              'menu_items': menu_items,
+                                                                              'menu_item_form': menu_item_form})
+
+    return redirect('/distributor/distributor-menus')

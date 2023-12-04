@@ -44,6 +44,11 @@
             <a href="{% url 'partner_update_status' request_type='dissolve' partner_id=partner.id %}">Dissolve Match</a>
         {% endif %}
     </p>
+    <p>
+      {% if partner.menu is not None and partner.menu.status == MenuStatus.APPROVED %}
+          Approved Menu link goes here
+      {% endif %}
+    </p>
 
 {% empty %}
     <h3>Matched Pairs</h3>

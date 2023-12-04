@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Distributor Menu</title>
+</head>
+<body>
+<h1>Edit Distributor Menu - {{ menu.restaurant.name }}</h1>
+
+{% for menu_item in menu_items %}
+ <p><strong>Menu Item:</strong> {{ menu_item.name }} - {{ menu_item.price }} - {{ menu_item.description }} </p>
+{% endfor %}
+
+<form method="post">
+    {% csrf_token %}
+    {{ menu_item_form.as_p }}
+    <button type="submit">Save</button>
+</form>
+
+
+</body>
+</html>
