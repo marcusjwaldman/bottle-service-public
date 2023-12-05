@@ -17,6 +17,7 @@ class Distributor(models.Model):
     address = models.OneToOneField(Address, on_delete=models.CASCADE, null=True)
     locomotion = models.CharField(max_length=20, choices=LocomotionType.choices, null=True)
     minutes_distance = models.IntegerField(null=True)
+    weekly_schedule = models.ForeignKey('schedule.WeeklySchedule', on_delete=models.CASCADE, null=True)
 
 
     class Meta:

@@ -22,6 +22,7 @@ def restaurant_home(request):
     return render(request, 'restaurant/restaurant_home.html')
 
 
+@bottle_service_auth(roles=[BottleServiceAccountType.RESTAURANT])
 def restaurant_profile(request):
     user = BottleServiceSession.get_user(request)
     if user is not None:

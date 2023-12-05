@@ -10,6 +10,7 @@ class Restaurant(models.Model):
     description = models.TextField(null=True)
     address = models.OneToOneField(Address, null=True, on_delete=models.CASCADE)
     minutes_distance = models.IntegerField(null=True)
+    weekly_schedule = models.ForeignKey('schedule.WeeklySchedule', on_delete=models.CASCADE, null=True)
 
 
     class Meta:
