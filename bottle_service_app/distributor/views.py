@@ -63,7 +63,8 @@ def distributor_profile(request):
             address_form = AddressForm()
             distributor_form = DistributorForm()
 
-    return render(request, 'distributor/distributor_profile.html', {'address_form': address_form, 'distributor_form': distributor_form})
+    return render(request, 'distributor/distributor_profile.html',
+                  {'address_form': address_form, 'distributor_form': distributor_form})
 
 
 @bottle_service_auth(roles=[BottleServiceAccountType.DISTRIBUTOR])
@@ -76,7 +77,7 @@ def distributor_menus(request):
             menu_list = Menu.objects.filter(distributor=distributor)
             partners = Partners.objects.filter(distributor=distributor, status=PartnerStatus.APPROVED)
             return render(request, 'distributor/distributor_menus.html', {'user': user,
-                                                                      'menu_list': menu_list, 'partners': partners})
+                                                                          'menu_list': menu_list, 'partners': partners})
 
 
 @bottle_service_auth(roles=[BottleServiceAccountType.DISTRIBUTOR])
@@ -87,8 +88,25 @@ def distributor_add_menu(request):
 
         if request.method == 'POST':
             partner_id = request.POST.get('partner')
+            delivery_minutes = request.POST.get('delivery_minutes')
             partner = Partners.objects.get(id=partner_id)
-            menu = Menu.objects.create(distributor=distributor, restaurant=partner.restaurant)
+            try:
+                delivery_minutes = int(delivery_minutes)
+                if delivery_minutes < partner.minutes_distance:
+                    menu_list = Menu.objects.filter(distributor=distributor)
+                    partners = Partners.objects.filter(distributor=distributor, status=PartnerStatus.APPROVED)
+                    context = {'error': f'Delivery minutes can not be less than the minimum travel time'
+                                        f' between partners of {partner.minutes_distance}', 'user': user,
+                               'menu_list': menu_list, 'partners': partners}
+                    return render(request, 'distributor/distributor_menus.html', context)
+            except (ValueError, TypeError):
+                menu_list = Menu.objects.filter(distributor=distributor)
+                partners = Partners.objects.filter(distributor=distributor, status=PartnerStatus.APPROVED)
+                context = {'error': 'Delivery minutes must be a number', 'user': user,
+                           'menu_list': menu_list, 'partners': partners}
+                return render(request, 'distributor/distributor_menus.html', context)
+            Menu.objects.create(distributor=distributor, restaurant=partner.restaurant,
+                                delivery_minutes=delivery_minutes)
 
     return redirect('/distributor/distributor-menus')
 
@@ -104,18 +122,24 @@ def distributor_edit_menu(request, menu_id):
             menu_item_form = MenuItemForm()
 
             return render(request, 'distributor/distributor_edit_menu.html', {'menu': menu,
-                                                                               'menu_items': menu_items,
-                                                                               'menu_item_form': menu_item_form})
+                                                                              'menu_items': menu_items,
+                                                                              'menu_item_form': menu_item_form})
 
         if request.method == 'POST':
             menu = Menu.objects.get(id=menu_id)
-            menu_item_form = MenuItemForm(request.POST)
-            menu_item = menu_item_form.save(commit=False)
-            menu_item.parent_menu = menu
-            menu_item.save()
+            action = request.POST.get('action')
+            if action == 'DELETE':
+                menu_item = MenuItem.objects.get(id=request.POST.get('menu_item_id'))
+                if menu_item is not None:
+                    menu_item.delete()
+            else:
+                menu_item_form = MenuItemForm(request.POST)
+                menu_item = menu_item_form.save(commit=False)
+                menu_item.parent_menu = menu
+                menu_item.save()
+
             menu_item_form = MenuItemForm()
             menu_items = MenuItem.objects.filter(parent_menu=menu)
-
             return render(request, 'distributor/distributor_edit_menu.html', {'menu': menu,
                                                                               'menu_items': menu_items,
                                                                               'menu_item_form': menu_item_form})

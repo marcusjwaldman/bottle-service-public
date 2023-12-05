@@ -82,6 +82,13 @@ class Menu(models.Model):
         ]
 
 
+class MenuItemCategory(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=100)
+    description = models.TextField()
+    parent_category = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
+
+
 class MenuItem(models.Model):
     id = models.AutoField(primary_key=True)
     parent_menu = models.ForeignKey(Menu, on_delete=models.CASCADE)
@@ -90,6 +97,7 @@ class MenuItem(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     out_of_stock = models.BooleanField(default=False)
     distributor_notes = models.TextField(null=True)
+    category = models.ForeignKey(MenuItemCategory, on_delete=models.CASCADE, null=True)
     # Future feature
     # photo = models.ImageField(upload_to='menu_items/', null=True, blank=True)
 

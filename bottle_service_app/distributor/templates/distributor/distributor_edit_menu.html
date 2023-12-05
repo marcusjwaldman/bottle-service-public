@@ -7,8 +7,26 @@
 <body>
 <h1>Edit Distributor Menu - {{ menu.restaurant.name }}</h1>
 
+<p><strong>Menu Item:</strong></p>
 {% for menu_item in menu_items %}
- <p><strong>Menu Item:</strong> {{ menu_item.name }} - {{ menu_item.price }} - {{ menu_item.description }} </p>
+<ol>
+    <li>
+        <p>
+            {{ menu_item.name }} - {{ menu_item.price }} - {{ menu_item.description }}
+            ({% if menu_item.category %}
+                {{ menu_item.category.name }}
+            {% else %}
+                No Category
+            {% endif %})
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="menu_item_id" value="{{ menu_item.id }}">
+                <input type="hidden" name="action" value="DELETE">
+                <button type="submit">Delete</button>
+            </form>
+        </p>
+    </li>
+</ol>
 {% endfor %}
 
 <form method="post">
@@ -17,6 +35,8 @@
     <button type="submit">Save</button>
 </form>
 
-
+        <a href="{% url 'distributor_home' %}">Home</a>
+        <a href="{% url 'distributor_menus' %}">Menus</a>
+        <a href="{% url 'authentication:logout' %}">Logout</a>
 </body>
 </html>
