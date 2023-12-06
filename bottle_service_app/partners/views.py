@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from authentication.decorators import bottle_service_auth
 from authentication.enums import BottleServiceAccountType
 from authentication.session import BottleServiceSession
-from partners.models import Partners
+from partners.models import Partners, Menu
 
 
 def update_status(user, request_type, partner_id):
@@ -109,3 +109,39 @@ def partner_update_status(request, request_type, partner_id):
 
     # Redirect back to the referring page or to a default URL if not available
     return redirect(referring_page or 'default_url')
+
+
+def update_menu_status(user, request_type, menu_id):
+    menu = Menu.objects.get(id=menu_id)
+    partner = Partners.objects.get(distributor=menu.distributor, restaurant=menu.restaurant)
+    if partner is None:
+        raise Exception("Partner not found")
+    elif partner.status != 'approved':
+        raise Exception("Partner not approved")
+
+    current_status = menu.status
+    if user is not None:
+        user_type = user.account_type
+        if request_type == 'submit':
+            if user_type == BottleServiceAccountType.DISTRIBUTOR:
+                if user.distributor.id != menu.distributor.id:
+                    raise Exception("Distributor must own the menu to submit")
+                if current_status == 'draft':
+                    menu.status = 'pending_restaurant'
+                    menu.save()
+                else:
+                    raise Exception("Menu must be in draft status to be submitted")
+            else:
+                raise Exception("Users must be distributors to submit a menu")
+
+
+@bottle_service_auth(roles=[BottleServiceAccountType.RESTAURANT, BottleServiceAccountType.DISTRIBUTOR])
+def menu_update_status(request, request_type, menu_id):
+    user = BottleServiceSession.get_user(request)
+
+    update_menu_status(user, request_type, menu_id)
+
+    referring_page = request.META.get('HTTP_REFERER')
+    # Redirect back to the referring page or to a default URL if not available
+    return redirect(referring_page or 'default_url')
+
