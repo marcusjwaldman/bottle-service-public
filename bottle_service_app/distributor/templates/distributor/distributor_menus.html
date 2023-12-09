@@ -93,7 +93,9 @@
             {% endif %}
             {% if menu.status != 'draft' %}
             - <a href="{% url 'distributor_view_menu' menu_id=menu.id %}">View Menu</a>
+            - <a href="{% url 'menu_update_status' request_type='reopen' menu_id=menu.id %}">Reopen Menu</a>
             {% endif %}
+            - <a href="{% url 'menu_update_status' request_type='archive' menu_id=menu.id %}">Archive Menu</a>
         </p>
     {% endfor %}
     <hr>

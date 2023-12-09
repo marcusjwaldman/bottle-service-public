@@ -6,7 +6,7 @@ from authentication.session import BottleServiceSession
 from distributor.forms import AddressForm
 from location.tools import GeoLocation
 from partners.matches import PartnerMatch
-from partners.models import Partners, Menu, MenuItem
+from partners.models import Partners, Menu, MenuItem, MenuStatus
 from restaurant.forms import RestaurantForm
 
 
@@ -71,9 +71,11 @@ def restaurant_menus(request):
         if request.method == 'GET':
             restaurant = user.restaurant
 
-            menu_list = Menu.objects.filter(restaurant=restaurant)
+            menu_list = Menu.objects.filter(restaurant=restaurant, status__in=[MenuStatus.PENDING_RESTAURANT_APPROVAL,
+                                                                                MenuStatus.APPROVED])
             return render(request, 'restaurant/restaurant_menus.html', {'user': user,
                                                                           'menu_list': menu_list})
+
 
 @bottle_service_auth(roles=[BottleServiceAccountType.RESTAURANT])
 def restaurant_view_menu(request, menu_id):

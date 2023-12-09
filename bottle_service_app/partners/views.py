@@ -133,6 +133,50 @@ def update_menu_status(user, request_type, menu_id):
                     raise Exception("Menu must be in draft status to be submitted")
             else:
                 raise Exception("Users must be distributors to submit a menu")
+        if request_type == 'approve':
+            if user_type == BottleServiceAccountType.RESTAURANT:
+                if user.restaurant.id != menu.restaurant.id:
+                    raise Exception("Restaurant must be attached to the menu to submitted to approve")
+                if current_status == 'pending_restaurant':
+                    menu.status = 'approved'
+                    menu.save()
+                else:
+                    raise Exception("Menu must be pending approval to be approved")
+            else:
+                raise Exception("Users must be restaurant to approve a menu")
+        if request_type == 'reject':
+            if user_type == BottleServiceAccountType.RESTAURANT:
+                if user.restaurant.id != menu.restaurant.id:
+                    raise Exception("Restaurant must be attached to the menu to submitted to reject")
+                if current_status == 'pending_restaurant':
+                    menu.status = 'rejected_by_restaurant'
+                    menu.save()
+                else:
+                    raise Exception("Menu must be pending approval to be rejected")
+            else:
+                raise Exception("Users must be restaurant to reject a menu")
+        # Menu can be archived by both restaurant and distributor from any status
+        if request_type == 'archive':
+            account_id = None
+            if user_type == BottleServiceAccountType.RESTAURANT:
+                account_id = user.restaurant.id
+            elif user_type == BottleServiceAccountType.DISTRIBUTOR:
+                account_id = user.distributor.id
+            if account_id is None or account_id not in [menu.restaurant.id, menu.distributor.id]:
+                raise Exception("Restaurant must be attached to the menu to archive a menu")
+            menu.status = 'archived'
+            menu.save()
+        if request_type == 'reopen':
+            if user_type == BottleServiceAccountType.DISTRIBUTOR:
+                if user.distributor.id != menu.distributor.id:
+                    raise Exception("Distributor must be attached to the menu to reopen a menu")
+                if current_status != 'draft':
+                    menu.status = 'draft'
+                    menu.save()
+                else:
+                    raise Exception("Menu does not need to be reopened when in draft status")
+            else:
+                raise Exception("Users must be distributor to reopen a menu")
 
 
 @bottle_service_auth(roles=[BottleServiceAccountType.RESTAURANT, BottleServiceAccountType.DISTRIBUTOR])

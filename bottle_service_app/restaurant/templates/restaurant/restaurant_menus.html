@@ -93,8 +93,9 @@
             - <a href="{% url 'menu_update_status' request_type='reject' menu_id=menu.id %}">Reject Menu</a>
             {% endif %}
             - <a href="{% url 'restaurant_view_menu' menu_id=menu.id %}">View Menu</a>
-
             {% endif %}
+            - <a href="{% url 'menu_update_status' request_type='archive' menu_id=menu.id %}">Archive Menu</a>
+
         </p>
     {% endfor %}
     <hr>
