@@ -6,7 +6,7 @@ from authentication.session import BottleServiceSession
 from distributor.forms import AddressForm
 from location.tools import GeoLocation
 from partners.matches import PartnerMatch
-from partners.models import Partners
+from partners.models import Partners, Menu, MenuItem
 from restaurant.forms import RestaurantForm
 
 
@@ -62,3 +62,29 @@ def restaurant_profile(request):
 
     return render(request, 'restaurant/restaurant_profile.html',
                   {'address_form': address_form, 'restaurant_form': restaurant_form})
+
+
+@bottle_service_auth(roles=[BottleServiceAccountType.RESTAURANT])
+def restaurant_menus(request):
+    user = BottleServiceSession.get_user(request)
+    if user is not None:
+        if request.method == 'GET':
+            restaurant = user.restaurant
+
+            menu_list = Menu.objects.filter(restaurant=restaurant)
+            return render(request, 'restaurant/restaurant_menus.html', {'user': user,
+                                                                          'menu_list': menu_list})
+
+@bottle_service_auth(roles=[BottleServiceAccountType.RESTAURANT])
+def restaurant_view_menu(request, menu_id):
+    user = BottleServiceSession.get_user(request)
+    if user is not None:
+        if request.method == 'GET':
+            menu = Menu.objects.get(id=menu_id)
+            if menu.restaurant == user.restaurant:
+                menu_items = MenuItem.objects.filter(parent_menu=menu)
+
+                return render(request, 'restaurant/restaurant_view_menu.html', {'menu': menu,
+                                                                              'menu_items': menu_items})
+            else:
+                raise Exception('You are not authorized to view this menu')

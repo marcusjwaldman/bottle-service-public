@@ -76,26 +76,14 @@
 </head>
 <body>
     <h1>
-        {% if menu_item_form is not None %}
-        Edit
-        {% else %}
-        View
-        {% endif %}
-        Distributor Menu - {{ menu.restaurant.name }}</h1>
+        Distributor Menu - {{ menu.distributor.name }}</h1>
 
 {% include 'partners/menu_item_list_sub.html' with menu_item_list=menu_item_list  %}
     <hr>
 
-    {% if menu_item_form is not None %}
-    <form method="post">
-        {% csrf_token %}
-        {{ menu_item_form.as_p }}
-        <button class="big_button" type="submit">Save</button>
-    </form>
-    {% endif %}
 
-    <a href="{% url 'distributor_home' %}">Home</a>
-    <a href="{% url 'distributor_menus' %}">Menus</a>
+    <a href="{% url 'restaurant_home' %}">Home</a>
+    <a href="{% url 'restaurant_menus' %}">Menus</a>
     <a href="{% url 'authentication:logout' %}">Logout</a>
 </body>
 </html>

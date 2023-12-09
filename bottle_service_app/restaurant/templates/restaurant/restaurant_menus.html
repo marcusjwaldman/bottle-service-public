@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Distributor Menus</title>
+    <title>Restaurant Menus</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -79,48 +79,26 @@
     </style>
 </head>
 <body>
-    <h1>Distributor Menus - {{ user.email }}</h1>
+    <h1>Restaurant Menus - {{ user.email }}</h1>
 
     {% for menu in menu_list %}
         <p>
-            {{ menu.restaurant.name }} -
+            {% if menu.status == 'pending_restaurant' or menu.status == 'approved' %}
+            {{ menu.distributor.name }} -
             {{ menu.created_at }} -
             {{ menu.status }} -
             {{ menu.delivery_minutes }} minutes -
-            {% if menu.status == 'draft' %}
-            <a href="{% url 'distributor_edit_menu' menu_id=menu.id %}">Edit Menu</a>
-            - <a href="{% url 'menu_update_status' request_type='submit' menu_id=menu.id %}">Submit Menu</a>
+            {% if menu.status == 'pending_restaurant' %}
+            - <a href="{% url 'menu_update_status' request_type='approve' menu_id=menu.id %}">Approve Menu</a>
+            - <a href="{% url 'menu_update_status' request_type='reject' menu_id=menu.id %}">Reject Menu</a>
             {% endif %}
-            {% if menu.status != 'draft' %}
-            - <a href="{% url 'distributor_view_menu' menu_id=menu.id %}">View Menu</a>
+            - <a href="{% url 'restaurant_view_menu' menu_id=menu.id %}">View Menu</a>
+
             {% endif %}
         </p>
     {% endfor %}
     <hr>
-    <form method="post" action="{% url 'distributor_add_menu' %}" class="clearfix">
-        {% csrf_token %}
-
-<div>
-        <div class="select">
-            <label for="partner">Select a Partner:</label>
-            <select id="partner" name="partner" required>
-                {% for partner in partners %}
-                    <option value="{{ partner.id }}">{{ partner.restaurant.name }}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <div class="input">
-            <label for="delivery_minutes">Delivery Time (Minutes):</label>
-            <input type="text" name="delivery_minutes" id="delivery_minutes">
-        </div>
-        <div class="inline">
-        <button type="submit">Create</button>
-        </div>
-</div>
-
-    </form>
-    <a href="{% url 'distributor_home' %}">Home</a>
+    <a href="{% url 'restaurant_home' %}">Home</a>
     <a href="{% url 'authentication:logout' %}">Logout</a>
 
     {% if error %}
