@@ -5,8 +5,8 @@ from distributor.models import Distributor, LocomotionType
 from location.models import Address
 from location.tools import GeoLocation
 from partners.matches import PartnerMatch
-from partners.models import Partners, PartnerStatus
-from partners.views import update_status
+from partners.models import Partners, PartnerStatus, Menu, MenuStatus
+from partners.views import update_status, update_menu_status
 from restaurant.models import Restaurant
 from django.urls import reverse
 from django.contrib.auth import get_user_model
@@ -108,7 +108,7 @@ class PartnerUpdateStatusTests(TestCase):
             account_type=BottleServiceAccountType.RESTAURANT,
             password='password'
         )
-        self.d_user = get_user_model().objects.create_user(
+        self.d_user_bad = get_user_model().objects.create_user(
             email='d_bad_test@example.com',
             account_type=BottleServiceAccountType.DISTRIBUTOR,
             password='password'
@@ -445,3 +445,152 @@ class PartnerUpdateStatusTests(TestCase):
         partners = Partners.objects.get(id=partner_id)
 
         self.assertEqual(partners.status_enum, PartnerStatus.REJECTED_BY_DISTRIBUTOR)
+
+
+class MenuUpdateStatusTests(TestCase):
+    def setUp(self):
+        self.r_user = get_user_model().objects.create_user(
+            email='r_test@example.com',
+            account_type=BottleServiceAccountType.RESTAURANT,
+            password='password'
+        )
+        self.d_user = get_user_model().objects.create_user(
+            email='d_test@example.com',
+            account_type=BottleServiceAccountType.DISTRIBUTOR,
+            password='password'
+        )
+        self.r_user_bad = get_user_model().objects.create_user(
+            email='r_bad_test@example.com',
+            account_type=BottleServiceAccountType.RESTAURANT,
+            password='password'
+        )
+        self.d_user_bad = get_user_model().objects.create_user(
+            email='d_bad_test@example.com',
+            account_type=BottleServiceAccountType.DISTRIBUTOR,
+            password='password'
+        )
+        self.partners = Partners.objects.create(restaurant=self.r_user.restaurant, distributor=self.d_user.distributor,
+                                                locomotion=LocomotionType.WALK,
+                                                minutes_distance=1000,)
+        self.partners_id = self.partners.id
+
+        self.menu = Menu.objects.create(
+            distributor=self.d_user.distributor,
+            restaurant=self.r_user.restaurant,
+            delivery_minutes=100,
+        )
+        self.menu_id = self.menu.id
+
+# Test request match
+    def test_update_menu_status_submit_good_path(self):
+        user = self.d_user
+        request_type = 'submit'
+        menu_id = self.menu_id
+
+        self.partners.status = PartnerStatus.APPROVED
+        self.partners.save()
+
+        self.menu.status = MenuStatus.DRAFT
+        self.menu.save()
+
+        update_menu_status(user, request_type, menu_id)
+
+        menu = Menu.objects.get(id=menu_id)
+
+        self.assertEqual(menu.status_enum, MenuStatus.PENDING_RESTAURANT_APPROVAL)
+
+# Test request match
+    def test_update_menu_status_submit_bab_path_wrong_pending_status(self):
+        user = self.d_user
+        request_type = 'submit'
+        menu_id = self.menu_id
+
+        self.partners.status = PartnerStatus.APPROVED
+        self.partners.save()
+
+        self.menu.status = MenuStatus.PENDING_RESTAURANT_APPROVAL
+        self.menu.save()
+
+        with self.assertRaises(Exception):
+            update_menu_status(user, request_type, menu_id)
+
+        menu = Menu.objects.get(id=menu_id)
+
+        self.assertEqual(menu.status_enum, MenuStatus.PENDING_RESTAURANT_APPROVAL)
+
+# Test request match
+    def test_update_menu_status_submit_bab_path_wrong_user_type(self):
+        user = self.r_user
+        request_type = 'submit'
+        menu_id = self.menu_id
+
+        self.partners.status = PartnerStatus.APPROVED
+        self.partners.save()
+
+        self.menu.status = MenuStatus.DRAFT
+        self.menu.save()
+
+        with self.assertRaises(Exception):
+            update_menu_status(user, request_type, menu_id)
+
+        menu = Menu.objects.get(id=menu_id)
+
+        self.assertEqual(menu.status_enum, MenuStatus.DRAFT)
+
+# Test request match
+    def test_update_menu_status_submit_bab_path_no_partner(self):
+        user = self.d_user_bad
+        request_type = 'submit'
+        menu_id = self.menu_id
+
+        self.partners.status = PartnerStatus.APPROVED
+        self.partners.save()
+
+        self.menu.status = MenuStatus.DRAFT
+        self.menu.save()
+
+        with self.assertRaises(Exception):
+            update_menu_status(user, request_type, menu_id)
+
+        menu = Menu.objects.get(id=menu_id)
+
+        self.assertEqual(menu.status_enum, MenuStatus.DRAFT)
+
+# Test request match
+    def test_update_menu_status_submit_bab_path_wrong_partner_status(self):
+        user = self.d_user
+        request_type = 'submit'
+        menu_id = self.menu_id
+
+        self.partners.status = PartnerStatus.REJECTED_BY_RESTAURANT
+        self.partners.save()
+
+        self.menu.status = MenuStatus.DRAFT
+        self.menu.save()
+
+        with self.assertRaises(Exception):
+            update_menu_status(user, request_type, menu_id)
+
+        menu = Menu.objects.get(id=menu_id)
+
+        self.assertEqual(menu.status_enum, MenuStatus.DRAFT)
+
+# Test request match
+    def test_update_menu_status_submit_bab_path_wrong_partner(self):
+        user = self.d_user
+        request_type = 'submit'
+        menu_id = self.menu_id
+
+        self.partners.status = PartnerStatus.APPROVED
+        self.partners.distributor = self.d_user_bad.distributor
+        self.partners.save()
+
+        self.menu.status = MenuStatus.DRAFT
+        self.menu.save()
+
+        with self.assertRaises(Exception):
+            update_menu_status(user, request_type, menu_id)
+
+        menu = Menu.objects.get(id=menu_id)
+
+        self.assertEqual(menu.status_enum, MenuStatus.DRAFT)

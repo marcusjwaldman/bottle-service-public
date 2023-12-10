@@ -59,6 +59,7 @@
                     <p><strong>Preference:</strong> None</p>
                 {% endif %}
             </div>
+            <p><a href="{% url 'restaurant_menus' %}">Menus</a></p>
     {% endif %}
     <div>
         {% include 'partners/partner_matches_sub.html' with partner_list=partner_list match_type='restaurant' %}

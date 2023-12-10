@@ -1,0 +1,26 @@
+    <p><strong>Menu Items:</strong></p>
+
+    {% for menu_item in menu_items %}
+        <ol>
+            <li>
+                <p class="inline">
+                    <div class="inline" style="margin-right: 10px;">
+                    {{ menu_item.name }} - {{ menu_item.price }} - {{ menu_item.description }}
+                    ({% if menu_item.category %}
+                        {{ menu_item.category.name }}
+                    {% else %}
+                        No Category
+                    {% endif %})
+                    </div>
+                {% if menu_item_form is not None %}
+                    <form class="inline" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="menu_item_id" value="{{ menu_item.id }}">
+                        <input type="hidden" name="action" value="DELETE">
+                        <button class="inline" type="submit">Delete</button>
+                    </form>
+                {% endif %}
+                </p>
+            </li>
+        </ol>
+    {% endfor %}

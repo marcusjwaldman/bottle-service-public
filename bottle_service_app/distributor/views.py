@@ -145,3 +145,19 @@ def distributor_edit_menu(request, menu_id):
                                                                               'menu_item_form': menu_item_form})
 
     return redirect('/distributor/distributor-menus')
+
+
+@bottle_service_auth(roles=[BottleServiceAccountType.DISTRIBUTOR])
+def distributor_view_menu(request, menu_id):
+    user = BottleServiceSession.get_user(request)
+    if user is not None:
+
+        if request.method == 'GET':
+            menu = Menu.objects.get(id=menu_id)
+            if menu.distributor == user.distributor:
+                menu_items = MenuItem.objects.filter(parent_menu=menu)
+
+                return render(request, 'distributor/distributor_edit_menu.html', {'menu': menu,
+                                                                              'menu_items': menu_items})
+            else:
+                raise Exception('You are not authorized to view this menu')

@@ -81,6 +81,10 @@ class Menu(models.Model):
             )
         ]
 
+    @property
+    def status_enum(self):
+        return MenuStatus(self.status)
+
 
 class MenuItemCategory(models.Model):
     id = models.AutoField(primary_key=True)
