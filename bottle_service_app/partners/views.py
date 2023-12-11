@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect
 
-from authentication.decorators import bottle_service_auth
+from authentication.decorators import bottle_service_auth, confirmation_required
 from authentication.enums import BottleServiceAccountType
 from authentication.session import BottleServiceSession
+from bottle_service_app.tools import get_previous_page
 from partners.models import Partners, Menu
 
 
@@ -100,12 +101,13 @@ def update_status(user, request_type, partner_id):
 
 
 @bottle_service_auth(roles=[BottleServiceAccountType.RESTAURANT, BottleServiceAccountType.DISTRIBUTOR])
+@confirmation_required("Are you sure you want to update this partner status?")
 def partner_update_status(request, request_type, partner_id):
     user = BottleServiceSession.get_user(request)
 
     update_status(user, request_type, partner_id)
 
-    referring_page = request.META.get('HTTP_REFERER')
+    referring_page = get_previous_page(request)
 
     # Redirect back to the referring page or to a default URL if not available
     return redirect(referring_page or 'default_url')
@@ -180,12 +182,13 @@ def update_menu_status(user, request_type, menu_id):
 
 
 @bottle_service_auth(roles=[BottleServiceAccountType.RESTAURANT, BottleServiceAccountType.DISTRIBUTOR])
+@confirmation_required("Are you sure you want to update this menu's status?")
 def menu_update_status(request, request_type, menu_id):
     user = BottleServiceSession.get_user(request)
 
     update_menu_status(user, request_type, menu_id)
 
-    referring_page = request.META.get('HTTP_REFERER')
+    referring_page = get_previous_page(request)
     # Redirect back to the referring page or to a default URL if not available
     return redirect(referring_page or 'default_url')
 

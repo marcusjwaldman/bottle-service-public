@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from authentication.decorators import bottle_service_auth
+from authentication.decorators import bottle_service_auth, confirmation_required
 from authentication.enums import BottleServiceAccountType
 from authentication.session import BottleServiceSession
 from location.tools import GeoLocation
@@ -111,6 +111,23 @@ def distributor_add_menu(request):
     return redirect('/distributor/distributor-menus')
 
 
+# Separate out DELETE so confirmation_required can be used on delete and not create
+@bottle_service_auth(roles=[BottleServiceAccountType.DISTRIBUTOR])
+@confirmation_required("Are you sure you want to delete this menu item?")
+def distributor_delete_menu_item(request, menu_id, menu_item_id):
+    user = BottleServiceSession.get_user(request)
+    if user is not None:
+        try:
+            menu_item = MenuItem.objects.get(id=menu_item_id)
+        except MenuItem.DoesNotExist:
+            menu_item = None
+
+        if menu_item is not None:
+            menu_item.delete()
+
+    return redirect(f'/distributor/distributor-edit-menu/{menu_id}/')
+
+
 @bottle_service_auth(roles=[BottleServiceAccountType.DISTRIBUTOR])
 def distributor_edit_menu(request, menu_id):
     user = BottleServiceSession.get_user(request)
@@ -127,16 +144,10 @@ def distributor_edit_menu(request, menu_id):
 
         if request.method == 'POST':
             menu = Menu.objects.get(id=menu_id)
-            action = request.POST.get('action')
-            if action == 'DELETE':
-                menu_item = MenuItem.objects.get(id=request.POST.get('menu_item_id'))
-                if menu_item is not None:
-                    menu_item.delete()
-            else:
-                menu_item_form = MenuItemForm(request.POST)
-                menu_item = menu_item_form.save(commit=False)
-                menu_item.parent_menu = menu
-                menu_item.save()
+            menu_item_form = MenuItemForm(request.POST)
+            menu_item = menu_item_form.save(commit=False)
+            menu_item.parent_menu = menu
+            menu_item.save()
 
             menu_item_form = MenuItemForm()
             menu_items = MenuItem.objects.filter(parent_menu=menu)

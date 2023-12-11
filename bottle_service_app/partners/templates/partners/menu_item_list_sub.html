@@ -13,12 +13,7 @@
                     {% endif %})
                     </div>
                 {% if menu_item_form is not None %}
-                    <form class="inline" method="post">
-                        {% csrf_token %}
-                        <input type="hidden" name="menu_item_id" value="{{ menu_item.id }}">
-                        <input type="hidden" name="action" value="DELETE">
-                        <button class="inline" type="submit">Delete</button>
-                    </form>
+                    <a href="{% url 'distributor_delete_menu_item' menu_id=menu.id menu_item_id=menu_item.id %}" class="inline">DELETE</a></a>
                 {% endif %}
                 </p>
             </li>

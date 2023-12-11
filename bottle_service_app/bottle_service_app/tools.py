@@ -43,3 +43,13 @@ class EmailMessager:
         # Print the status code and body of the response
         print("Status Code:", response.status_code)
         print("Response Body:", response.body)
+
+
+def get_previous_page(request):
+    if request.method == 'POST':
+        referring_page = request.POST.get('referring_page')
+    elif request.method == 'GET':
+        referring_page = request.GET.get('referring_page')
+    if not referring_page:
+        referring_page = request.META.get('HTTP_REFERER')
+    return referring_page

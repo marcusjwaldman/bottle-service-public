@@ -7,6 +7,8 @@ class MenuItemForm(forms.ModelForm):
         model = MenuItem
         fields = ['name', 'description', 'price', 'distributor_notes', 'category']
 
+    distributor_notes = forms.CharField(required=False)
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         categories = MenuItemCategory.objects.all()
