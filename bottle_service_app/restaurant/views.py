@@ -6,6 +6,7 @@ from authentication.session import BottleServiceSession
 from distributor.forms import AddressForm
 from location.tools import GeoLocation
 from partners.matches import PartnerMatch
+from partners.menu import customer_menu
 from partners.models import Partners, Menu, MenuItem, MenuStatus
 from restaurant.forms import RestaurantForm
 
@@ -90,3 +91,24 @@ def restaurant_view_menu(request, menu_id):
                                                                               'menu_items': menu_items})
             else:
                 raise Exception('You are not authorized to view this menu')
+
+
+@bottle_service_auth(roles=[BottleServiceAccountType.RESTAURANT])
+def restaurant_customer_menu(request):
+    user = BottleServiceSession.get_user(request)
+    if user is not None:
+        if request.method == 'GET':
+            menu_map = customer_menu(user.restaurant)
+            # menu_list = Menu.objects.filter(restaurant=user.restaurant, status=MenuStatus.APPROVED)
+            # menu_map = dict()
+            #
+            # for menu in menu_list:
+            #     menu_items = MenuItem.objects.filter(parent_menu=menu)
+            #     for menu_item in menu_items:
+            #         if menu_item.category not in menu_map:
+            #             menu_map[menu_item.category] = list()
+            #         menu_map[menu_item.category].append(menu_item)
+            # for key, item in menu_map.items():
+            #     item.sort(key=lambda x: x.price)
+            return render(request, 'restaurant/restaurant_customer_menu.html',
+                          {'restaurant': user.restaurant, 'menu_map': menu_map})
