@@ -99,6 +99,8 @@
         </p>
     {% endfor %}
     <hr>
+    <a href="{% url 'generate_restaurant_menu_qrcode' %}">Customer Menu QR Code</a>
+    <a href="{% url 'restaurant_customer_menu' %}">Customer Menu</a>
     <a href="{% url 'restaurant_home' %}">Home</a>
     <a href="{% url 'authentication:logout' %}">Logout</a>
 

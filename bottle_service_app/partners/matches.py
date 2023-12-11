@@ -1,3 +1,5 @@
+from math import ceil
+
 from distributor.models import Distributor
 from location.tools import GeoLocation
 from partners.models import Partners
@@ -23,7 +25,7 @@ class PartnerMatch:
             (distributor.address.latitude, distributor.address.longitude),
             (restaurant.address.latitude, restaurant.address.longitude),
             locomotion_type)
-        duration_minutes = duration_seconds / 60
+        duration_minutes = max(1, ceil(duration_seconds / 60))
 
         if duration_minutes <= max_minutes_distance:
             partners = Partners(distributor=distributor, restaurant=restaurant, minutes_distance=duration_minutes,
