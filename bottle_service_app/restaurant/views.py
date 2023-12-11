@@ -1,14 +1,25 @@
+import base64
+import os
+
+from django.conf import settings
 from django.shortcuts import render, redirect
+from django.urls import reverse
 
 from authentication.decorators import bottle_service_auth
 from authentication.enums import BottleServiceAccountType
 from authentication.session import BottleServiceSession
+from customer.views import customer_restaurant_menu
 from distributor.forms import AddressForm
 from location.tools import GeoLocation
 from partners.matches import PartnerMatch
 from partners.menu import customer_menu
 from partners.models import Partners, Menu, MenuItem, MenuStatus
 from restaurant.forms import RestaurantForm
+import qrcode
+from io import BytesIO
+from django.template import TemplateSyntaxError, VariableDoesNotExist
+from django.utils.encoding import force_str
+from django import template
 
 
 @bottle_service_auth(roles=[BottleServiceAccountType.RESTAURANT])
@@ -99,16 +110,43 @@ def restaurant_customer_menu(request):
     if user is not None:
         if request.method == 'GET':
             menu_map = customer_menu(user.restaurant)
-            # menu_list = Menu.objects.filter(restaurant=user.restaurant, status=MenuStatus.APPROVED)
-            # menu_map = dict()
-            #
-            # for menu in menu_list:
-            #     menu_items = MenuItem.objects.filter(parent_menu=menu)
-            #     for menu_item in menu_items:
-            #         if menu_item.category not in menu_map:
-            #             menu_map[menu_item.category] = list()
-            #         menu_map[menu_item.category].append(menu_item)
-            # for key, item in menu_map.items():
-            #     item.sort(key=lambda x: x.price)
             return render(request, 'restaurant/restaurant_customer_menu.html',
                           {'restaurant': user.restaurant, 'menu_map': menu_map})
+    else:
+        return redirect('/restaurant')
+
+
+@bottle_service_auth(roles=[BottleServiceAccountType.RESTAURANT])
+def generate_restaurant_menu_qrcode(request):
+    user = BottleServiceSession.get_user(request)
+    if user is not None:
+        restaurant_id = user.restaurant.id
+
+        base_name = "qrcode_restaurant_" + str(restaurant_id)
+        qrcode_image_name = f'{base_name}.png'
+        media_root = settings.MEDIA_ROOT + "/"
+        full_file_name = media_root + qrcode_image_name
+        url_to_embed = request.build_absolute_uri(reverse(customer_restaurant_menu, args=[restaurant_id]))
+        if not os.path.isfile(full_file_name):
+            print("Generating QR code for restaurant " + str(restaurant_id))
+            # Replace 'YOUR_URL_HERE' with the actual URL you want to embed
+
+            # Generate QR code
+            qr = qrcode.QRCode(
+                version=1,
+                error_correction=qrcode.constants.ERROR_CORRECT_L,
+                box_size=10,
+                border=4,
+            )
+            qr.add_data(url_to_embed)
+            qr.make(fit=True)
+
+            # Create an image from the QR code
+            img = qr.make_image(fill_color="black", back_color="white")
+
+            # Create a BytesIO buffer
+            img.save(full_file_name)
+
+        # Pass the binary data to the template
+        context = {'qrcode_image': qrcode_image_name, 'menu_url': url_to_embed}
+        return render(request, 'restaurant/restaurant_menu_qrcode.html', context)

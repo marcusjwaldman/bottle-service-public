@@ -7,4 +7,6 @@ urlpatterns = [
     path('restaurant-menus', views.restaurant_menus, name='restaurant_menus'),
     path('restaurant-view-menu/<int:menu_id>/', views.restaurant_view_menu, name='restaurant_view_menu'),
     path('restaurant-customer-menu', views.restaurant_customer_menu, name='restaurant_customer_menu'),
+    path('generate-restaurant-menu-qrcode', views.generate_restaurant_menu_qrcode,
+         name='generate_restaurant_menu_qrcode'),
 ]
