@@ -81,7 +81,7 @@
 <body>
     <h1>{{ restaurant.name }} Menu QR Code</h1>
 
-    <img src="http://localhost:8000/media/{{ qrcode_image }}" alt="Image"><br>
+    <img src="/media/{{ qrcode_image }}" alt="Image"><br>
     <a href="{{ menu_url }}">{{ menu_url }}</a><br>
 
     <a href="{% url 'restaurant_home' %}">Home</a>
