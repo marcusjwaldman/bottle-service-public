@@ -6,3 +6,4 @@ db.sqlite3
 desktop.ini
 ~*.docx
 **/media/
+bottle_service.log
