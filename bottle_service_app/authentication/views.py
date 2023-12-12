@@ -11,13 +11,13 @@ login_page = 'authentication/login.html'
 
 def redirect_to_account_type(request, account_type):
     if BottleServiceAccountType.DISTRIBUTOR.equals_string(account_type):
-        return redirect('/distributor')
+        return redirect('/distributor/')
     elif BottleServiceAccountType.RESTAURANT.equals_string(account_type):
-        return redirect('/restaurant')
+        return redirect('/restaurant/')
     elif BottleServiceAccountType.CUSTOMER.equals_string(account_type):
-        return redirect('/customer')
+        return redirect('/customer/')
     elif BottleServiceAccountType.ADMIN.equals_string(account_type):
-        return redirect('/administration')
+        return redirect('/administration/')
     else:
         context = {'error': 'Invalid account type'}
         return render(request, login_page, context)
