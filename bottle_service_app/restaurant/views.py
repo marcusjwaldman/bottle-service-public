@@ -63,7 +63,7 @@ def restaurant_profile(request):
             partner_match = PartnerMatch()
             partner_list = partner_match.match_restaurant(restaurant)
 
-            return redirect('/restaurant')
+            return redirect('/restaurant/')
     else:
         if restaurant is not None:
             address_form = AddressForm(instance=restaurant.address)
@@ -113,7 +113,7 @@ def restaurant_customer_menu(request):
             return render(request, 'restaurant/restaurant_customer_menu.html',
                           {'restaurant': user.restaurant, 'menu_map': menu_map})
     else:
-        return redirect('/restaurant')
+        return redirect('/restaurant/')
 
 
 @bottle_service_auth(roles=[BottleServiceAccountType.RESTAURANT])

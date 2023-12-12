@@ -54,7 +54,7 @@ def distributor_profile(request):
             partner_match = PartnerMatch()
             partner_list = partner_match.match_distributor(distributor)
 
-            return redirect('/distributor')
+            return redirect('/distributor/')
     else:
         if distributor is not None:
             address_form = AddressForm(instance=distributor.address)
@@ -108,7 +108,7 @@ def distributor_add_menu(request):
             Menu.objects.create(distributor=distributor, restaurant=partner.restaurant,
                                 delivery_minutes=delivery_minutes)
 
-    return redirect('/distributor/distributor-menus')
+    return redirect('/distributor/distributor-menus/')
 
 
 # Separate out DELETE so confirmation_required can be used on delete and not create
@@ -155,7 +155,7 @@ def distributor_edit_menu(request, menu_id):
                                                                               'menu_items': menu_items,
                                                                               'menu_item_form': menu_item_form})
 
-    return redirect('/distributor/distributor-menus')
+    return redirect('/distributor/distributor-menus/')
 
 
 @bottle_service_auth(roles=[BottleServiceAccountType.DISTRIBUTOR])
