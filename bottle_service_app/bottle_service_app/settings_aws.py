@@ -11,6 +11,8 @@ from bottle_service_app.tools import split_string
 # SESSION_COOKIE_HTTPONLY = True
 # CSRF_COOKIE_HTTPONLY = True
 
+DEBUG = False
+
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 ALLOWED_HOSTS = split_string(os.environ.get('DJANGO_ALLOWED_HOSTS'))
 
