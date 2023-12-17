@@ -28,11 +28,12 @@ def login(request):
         # BottleServiceSession.clear_session(request)
         if BottleServiceSession.has_user(request):
             user_stored = BottleServiceSession.get_user(request)
+            if not user_stored:
+                return render(request, login_page)
             try:
                 user = BottleServiceUser.objects.get(id=user_stored.id)
             except BottleServiceUser.DoesNotExist:
-                context = {'error': 'User not found'}
-                return render(request, login_page, context)
+                return render(request, login_page)
             if user.is_active:
                 account_type = user.account_type
                 return redirect_to_account_type(request, account_type)
@@ -59,6 +60,9 @@ def login(request):
             context = {'error': 'User not active'}
             return render(request, login_page, context)
 
+        # Resetting the session for security reasons
+        request.session.cycle_key()
+        # Storing user in session authorized the user
         BottleServiceSession.store_user_obj(request, user)
 
         account_type = user.account_type

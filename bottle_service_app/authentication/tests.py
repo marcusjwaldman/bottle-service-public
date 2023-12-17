@@ -3,6 +3,7 @@ from django.http import HttpRequest
 from django.test import TestCase
 from django.core.exceptions import ValidationError
 
+from authentication.exceptions import AuthenticationMissingException
 from authentication.security import PasswordStrength, VerificationCode
 from authentication.session import BottleServiceSession
 from authentication.views import redirect_to_account_type
@@ -407,7 +408,8 @@ class BottleServiceSessionTest(TestCase):
         request = self.client.request().wsgi_request
 
         # Ensure there's no user in the session initially
-        self.assertIsNone(BottleServiceSession.get_account_type(request))
+        with self.assertRaises(AuthenticationMissingException):
+            BottleServiceSession.get_account_type(request)
 
         # Store the user in the session
         BottleServiceSession.store_user_obj(request, self.user)
@@ -441,7 +443,7 @@ class RedirectToAccountTypeTest(TestCase):
 
         # Check if the response is a redirect to /distributor
         self.assertEqual(response.status_code, 302)  # 302 is the HTTP status code for a redirect
-        self.assertEqual(response.url, '/distributor')
+        self.assertEqual(response.url, '/distributor/')
 
     def test_redirect_restaurant_name(self):
         # Simulate a request to /distributor
@@ -451,7 +453,7 @@ class RedirectToAccountTypeTest(TestCase):
 
         # Check if the response is a redirect to /distributor
         self.assertEqual(response.status_code, 302)  # 302 is the HTTP status code for a redirect
-        self.assertEqual(response.url, '/restaurant')
+        self.assertEqual(response.url, '/restaurant/')
 
     def test_redirect_admin_value(self):
         # Simulate a request to /distributor
@@ -461,7 +463,7 @@ class RedirectToAccountTypeTest(TestCase):
 
         # Check if the response is a redirect to /distributor
         self.assertEqual(response.status_code, 302)  # 302 is the HTTP status code for a redirect
-        self.assertEqual(response.url, '/administration')
+        self.assertEqual(response.url, '/administration/')
 
     def test_redirect_invalid(self):
         # Simulate a request to /distributor
