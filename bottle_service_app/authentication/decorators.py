@@ -27,11 +27,18 @@ def bottle_service_auth(roles):
                 print("User not in session")
                 return redirect('/', {'error': 'System error. Please, try login again. If the problem persists, '
                                                'contact support.'})
+
+            if not user.is_active:
+                print("User not active")
+                return redirect('/', {'error': 'Sorry, it appears the account you are trying to access is '
+                                               'not active. Please, try another account. Or if you think your account'
+                                               'has been deactivated by mistake, please contact support.'})
+
             account_type = user.account_type
             if not account_type or not any(r.equals_string(account_type) for r in roles):
                 print("User not authorized ")
                 raise Exception("User not authorized to access this page")
-            # TODO: Add active check
+            # Active check
 
             return function(request, *args, **kwargs)
 
