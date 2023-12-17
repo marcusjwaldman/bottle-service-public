@@ -2,6 +2,7 @@
 from django.shortcuts import render, redirect
 
 from authentication.enums import BottleServiceAccountType
+from authentication.exceptions import AuthenticationExpiredException, AuthenticationMissingException
 from authentication.models import BottleServiceUser
 from authentication.session import BottleServiceSession
 
@@ -11,14 +12,33 @@ def bottle_service_auth(roles):
     def decorator(function):
         def wrap(request, *args, **kwargs):
             print("Authenticating for Protected Webpage...")
-            if not BottleServiceSession.has_user(request):
+            # User not logged in redirect to login page
+            try:
+                user = BottleServiceSession.get_user(request)
+            except AuthenticationExpiredException:
+                return redirect('/', {'error': 'Authentication expired. Please login again.'})
+            except AuthenticationMissingException:
+                return redirect('/')
+            except Exception as e:
+                print(e)
+                return redirect('/', {'error': 'System error. Please, try login again. If the problem persists, '
+                                               'contact support.'})
+            if not user:
                 print("User not in session")
-                raise Exception("User not in session")
-            user = BottleServiceSession.get_user(request)
+                return redirect('/', {'error': 'System error. Please, try login again. If the problem persists, '
+                                               'contact support.'})
+
+            if not user.is_active:
+                print("User not active")
+                return redirect('/', {'error': 'Sorry, it appears the account you are trying to access is '
+                                               'not active. Please, try another account. Or if you think your account'
+                                               'has been deactivated by mistake, please contact support.'})
+
             account_type = user.account_type
-            if not any(r.equals_string(account_type) for r in roles):
-                print("User not authorized")
-                raise Exception("User not authorized")
+            if not account_type or not any(r.equals_string(account_type) for r in roles):
+                print("User not authorized ")
+                raise Exception("User not authorized to access this page")
+            # Active check
 
             return function(request, *args, **kwargs)
 
