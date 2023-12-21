@@ -105,3 +105,41 @@ sudo apt-get install libssl-dev<br>
 sudo apt-get install python3-dev default-libmysqlclient-dev build-essential<br>
 sudo apt-get install python3-dev default-libmysqlclient-dev build-essential pkg-config<br>
 
+
+**Run Production**<br>
+Update nginx config file with correct dns name if changed <br>
+`sudo vi /etc/nginx/sites-available/bottle_service_app` <br>
+nohup gunicorn bottle_service_app.wsgi:application>> ../bottle_service.log & <br>
+sudo nginx -t <br>
+sudo systemctl restart nginx <br>
+
+
+**Make Production Ready** <br>
+Obtain SSL Certs - key, csr, crt and dhparams <br>
+_Temp SSL Creation_ <br>
+openssl genpkey -algorithm RSA -out dyob_server.key <br>
+openssl req -new -key dyob_server.key -out dyob_server.csr <br>
+openssl x509 -req -days 365 -in dyob_server.csr -signkey dyob_server.key -out dyob_server.crt <br>
+sudo openssl dhparam -out dyob-ssl-dhparams.pem 2048
+Update nginx config file: <br>
+sudo vi /etc/nginx/sites-available/bottle_service_app <br>
+`server {
+    listen 443 ssl;
+    server_name ec2-34-227-99-185.compute-1.amazonaws.com;
+    ssl_certificate /home/ubuntu/bottle-service/certs/dyob_server.crt;
+    ssl_certificate_key /home/ubuntu/bottle-service/certs/dyob_server.key;
+    ssl_dhparam /home/ubuntu/bottle-service/certs/dyob-ssl-dhparams.pem;
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location /static/ {
+        root /bottle-service/bottle_service_app/media;
+    }
+    location / {
+        include proxy_params;
+        proxy_pass http://127.0.0.1:8000;  # Assuming Gunicorn is running on this port
+    }
+}` <br>
+sudo nginx -t <br>
+sudo systemctl restart nginx <br>
+
+**Temp SSL** <br>
+/home/ubuntu/bottle-service/certs/dyob_server.crt
