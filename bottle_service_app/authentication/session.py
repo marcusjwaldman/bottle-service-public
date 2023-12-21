@@ -22,7 +22,7 @@ class BottleServiceSession:
             BottleServiceSession.clear_session(request)
             raise AuthenticationMissingException()
         if (timezone.now() - timezone.datetime.fromisoformat(last_accessed) >
-                timezone.timedelta(minutes=settings.AUTH_TIMEOUT_MINUTES)):
+                timezone.timedelta(minutes=int(settings.AUTH_TIMEOUT_MINUTES))):
             BottleServiceSession.clear_session(request)
             raise AuthenticationExpiredException()
 
