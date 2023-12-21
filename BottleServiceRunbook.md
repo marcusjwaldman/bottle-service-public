@@ -124,6 +124,11 @@ sudo openssl dhparam -out dyob-ssl-dhparams.pem 2048
 Update nginx config file: <br>
 sudo vi /etc/nginx/sites-available/bottle_service_app <br>
 `server {
+    listen 80;
+    server_name ec2-34-227-99-185.compute-1.amazonaws.com;
+    return 301 https://$host$request_uri;
+}
+server {
     listen 443 ssl;
     server_name ec2-34-227-99-185.compute-1.amazonaws.com;
     ssl_certificate /home/ubuntu/bottle-service/certs/dyob_server.crt;
