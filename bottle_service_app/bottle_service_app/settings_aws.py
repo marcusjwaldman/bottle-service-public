@@ -6,10 +6,10 @@ import os
 from bottle_service_app.tools import split_string
 
 # Implement when SSL is ready
-# SESSION_COOKIE_SECURE = True
-# CSRF_COOKIE_SECURE = True
-# SESSION_COOKIE_HTTPONLY = True
-# CSRF_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = True
 
 DEBUG = False
 
