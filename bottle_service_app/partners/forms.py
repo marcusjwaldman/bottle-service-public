@@ -1,10 +1,10 @@
 from django import forms
-from .models import MenuItem, MenuItemCategory
+from .models import Item, MenuItemCategory
 
 
-class MenuItemForm(forms.ModelForm):
+class ItemForm(forms.ModelForm):
     class Meta:
-        model = MenuItem
+        model = Item
         fields = ['name', 'description', 'price', 'distributor_notes', 'category']
 
     distributor_notes = forms.CharField(required=False)

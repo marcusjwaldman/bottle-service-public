@@ -93,9 +93,9 @@ class MenuItemCategory(models.Model):
     parent_category = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
 
 
-class MenuItem(models.Model):
+class Item(models.Model):
     id = models.AutoField(primary_key=True)
-    parent_menu = models.ForeignKey(Menu, on_delete=models.CASCADE)
+    distributor = models.ForeignKey(Distributor, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
@@ -106,10 +106,22 @@ class MenuItem(models.Model):
     # photo = models.ImageField(upload_to='menu_items/', null=True, blank=True)
 
     class Meta:
-        unique_together = ('parent_menu', 'name')
+        unique_together = ('distributor', 'name')
         constraints = [
             CheckConstraint(
                 check=Q(price__gt=0),
                 name='menu_item_price_positive_constraint'
             )
         ]
+
+
+class MenuItem(models.Model):
+    id = models.AutoField(primary_key=True)
+    parent_menu = models.ForeignKey(Menu, on_delete=models.CASCADE)
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    overridden_price = models.DecimalField(max_digits=10, decimal_places=2, null=True)
+    percentage_adjustment = models.DecimalField(max_digits=6, decimal_places=2, null=True)
+    dollar_adjustment = models.DecimalField(max_digits=10, decimal_places=2, null=True)
+
+    class Meta:
+        unique_together = ('parent_menu', 'item')

@@ -3,9 +3,9 @@ from authentication.decorators import bottle_service_auth, confirmation_required
 from authentication.enums import BottleServiceAccountType
 from authentication.session import BottleServiceSession
 from location.tools import GeoLocation
-from partners.forms import MenuItemForm
+from partners.forms import ItemForm
 from partners.matches import PartnerMatch
-from partners.models import Partners, Menu, PartnerStatus, MenuItem
+from partners.models import Partners, Menu, PartnerStatus, MenuItem, Item
 from .forms import AddressForm, DistributorForm
 from .models import Distributor
 
@@ -136,7 +136,7 @@ def distributor_edit_menu(request, menu_id):
         if request.method == 'GET':
             menu = Menu.objects.get(id=menu_id)
             menu_items = MenuItem.objects.filter(parent_menu=menu)
-            menu_item_form = MenuItemForm()
+            menu_item_form = ItemForm()
 
             return render(request, 'distributor/distributor_edit_menu.html', {'menu': menu,
                                                                               'menu_items': menu_items,
@@ -144,12 +144,12 @@ def distributor_edit_menu(request, menu_id):
 
         if request.method == 'POST':
             menu = Menu.objects.get(id=menu_id)
-            menu_item_form = MenuItemForm(request.POST)
+            menu_item_form = ItemForm(request.POST)
             menu_item = menu_item_form.save(commit=False)
             menu_item.parent_menu = menu
             menu_item.save()
 
-            menu_item_form = MenuItemForm()
+            menu_item_form = ItemForm()
             menu_items = MenuItem.objects.filter(parent_menu=menu)
             return render(request, 'distributor/distributor_edit_menu.html', {'menu': menu,
                                                                               'menu_items': menu_items,
@@ -172,3 +172,63 @@ def distributor_view_menu(request, menu_id):
                                                                               'menu_items': menu_items})
             else:
                 raise Exception('You are not authorized to view this menu')
+
+
+@bottle_service_auth(roles=[BottleServiceAccountType.DISTRIBUTOR])
+def distributor_edit_items(request):
+    user = BottleServiceSession.get_user(request)
+    if user is not None:
+
+        if request.method == 'GET':
+            items = Item.objects.filter(distributor=user.distributor)
+            item_form = ItemForm()
+
+            return render(request, 'distributor/distributor_edit_items.html', {'items': items,
+                                                                              'item_form': item_form})
+
+        if request.method == 'POST':
+            item_form = ItemForm(request.POST)
+            item = item_form.save(commit=False)
+            item.distributor = user.distributor
+            item.save()
+
+    return redirect('/distributor/distributor-edit-items/')
+
+
+@bottle_service_auth(roles=[BottleServiceAccountType.DISTRIBUTOR])
+@confirmation_required("Are you sure you want to delete this item?")
+def distributor_delete_item(request, item_id):
+    user = BottleServiceSession.get_user(request)
+    if user is not None:
+        try:
+            item = Item.objects.get(id=item_id, distributor=user.distributor)
+        except Item.DoesNotExist:
+            item = None
+
+        if item is not None:
+            item.delete()
+
+    return redirect(f'/distributor/distributor-edit-items/')
+
+
+def distributor_edit_item(request, item_id):
+    user = BottleServiceSession.get_user(request)
+    if user is not None:
+        try:
+            item = Item.objects.get(id=item_id, distributor=user.distributor)
+        except Item.DoesNotExist:
+            item = None
+
+        if request.method == 'GET':
+            item_form = ItemForm(instance=item)
+            return render(request, 'distributor/distributor_edit_item.html', {'item_form': item_form})
+        if request.method == 'POST':
+            if item is not None:
+                item_form = ItemForm(request.POST)
+                item = item_form.save(commit=False)
+                item.id = item_id
+                item.distributor = user.distributor
+                item.save()
+            return redirect(f'/distributor/distributor-edit-items/')
+
+
