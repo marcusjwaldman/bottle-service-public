@@ -135,25 +135,42 @@ def distributor_edit_menu(request, menu_id):
 
         if request.method == 'GET':
             menu = Menu.objects.get(id=menu_id)
+            master_items = Item.objects.filter(distributor=user.distributor)
+            master_items_excluded = master_items.exclude(menuitem__parent_menu=menu)
             menu_items = MenuItem.objects.filter(parent_menu=menu)
-            menu_item_form = ItemForm()
+
 
             return render(request, 'distributor/distributor_edit_menu.html', {'menu': menu,
+                                                                              'master_items': master_items_excluded,
                                                                               'menu_items': menu_items,
-                                                                              'menu_item_form': menu_item_form})
+                                                                              })
 
         if request.method == 'POST':
             menu = Menu.objects.get(id=menu_id)
-            menu_item_form = ItemForm(request.POST)
-            menu_item = menu_item_form.save(commit=False)
-            menu_item.parent_menu = menu
-            menu_item.save()
+            items = request.POST.getlist('selected_items')
+            for item in items:
+                menu_item = MenuItem()
+                menu_item.parent_menu = menu
+                menu_item.item = Item.objects.get(id=item)
+                menu_item.save()
+            # menu_item.item = Item.objects.get(id=item)
+            # if price:
+            #     menu_item.overridden_price = price
+            # if percentage:
+            #     menu_item.percentage_adjustment = percentage
+            # if dollars:
+            #     menu_item.dollars_adjustment = dollars
+            # menu_item.save()
 
-            menu_item_form = ItemForm()
+            menu = Menu.objects.get(id=menu_id)
             menu_items = MenuItem.objects.filter(parent_menu=menu)
+            master_items = Item.objects.filter(distributor=user.distributor)
+            master_items_excluded = master_items.exclude(menuitem__parent_menu=menu)
+
             return render(request, 'distributor/distributor_edit_menu.html', {'menu': menu,
+                                                                              'master_items': master_items_excluded,
                                                                               'menu_items': menu_items,
-                                                                              'menu_item_form': menu_item_form})
+                                                                              })
 
     return redirect('/distributor/distributor-menus/')
 
