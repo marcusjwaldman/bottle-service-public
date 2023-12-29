@@ -128,6 +128,13 @@ def distributor_delete_menu_item(request, menu_id, menu_item_id):
     return redirect(f'/distributor/distributor-edit-menu/{menu_id}/')
 
 
+def float_or_none(value):
+    if value is None or value == '' or str(value).strip() == '':
+        return None
+    else:
+        return float(value)
+
+
 @bottle_service_auth(roles=[BottleServiceAccountType.DISTRIBUTOR])
 def distributor_edit_menu(request, menu_id):
     user = BottleServiceSession.get_user(request)
@@ -139,7 +146,6 @@ def distributor_edit_menu(request, menu_id):
             master_items_excluded = master_items.exclude(menuitem__parent_menu=menu)
             menu_items = MenuItem.objects.filter(parent_menu=menu)
 
-
             return render(request, 'distributor/distributor_edit_menu.html', {'menu': menu,
                                                                               'master_items': master_items_excluded,
                                                                               'menu_items': menu_items,
@@ -147,20 +153,39 @@ def distributor_edit_menu(request, menu_id):
 
         if request.method == 'POST':
             menu = Menu.objects.get(id=menu_id)
+            menu_item_id = request.POST.get('menu_item_id')
+
+            if menu_item_id:
+                menu_item = MenuItem.objects.get(id=menu_item_id)
+
+                try:
+                    price = float_or_none(request.POST.get('price'))
+                    percentage = float_or_none(request.POST.get('percentage'))
+                    dollar = float_or_none(request.POST.get('dollar'))
+                except ValueError:
+                    price = None
+                    percentage = None
+                    dollar = None
+                if price == 0:
+                    price = None
+                if percentage == 0:
+                    percentage = None
+                if dollar == 0:
+                    dollar = None
+                if price:
+                    menu_item.overridden_price = price
+                if percentage:
+                    menu_item.percentage_adjustment = percentage
+                if dollar:
+                    menu_item.dollar_adjustment = dollar
+                menu_item.save()
+
             items = request.POST.getlist('selected_items')
             for item in items:
                 menu_item = MenuItem()
                 menu_item.parent_menu = menu
                 menu_item.item = Item.objects.get(id=item)
                 menu_item.save()
-            # menu_item.item = Item.objects.get(id=item)
-            # if price:
-            #     menu_item.overridden_price = price
-            # if percentage:
-            #     menu_item.percentage_adjustment = percentage
-            # if dollars:
-            #     menu_item.dollars_adjustment = dollars
-            # menu_item.save()
 
             menu = Menu.objects.get(id=menu_id)
             menu_items = MenuItem.objects.filter(parent_menu=menu)
