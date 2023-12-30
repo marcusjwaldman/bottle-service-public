@@ -146,7 +146,7 @@
         var dollar = parseFloat(document.getElementById('dollar_{{ menu_item.id }}').value) || 0;
 
         // Calculate the sum
-        var calculatedPrice = price + (basePrice * percentage) / 100 + dollar;
+        var calculatedPrice = price + (price * percentage) / 100 + dollar;
 
         // Update the calculatedPrice field
         document.getElementById('calculatedPrice_{{ menu_item.id }}').value = calculatedPrice;

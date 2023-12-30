@@ -125,3 +125,22 @@ class MenuItem(models.Model):
 
     class Meta:
         unique_together = ('parent_menu', 'item')
+
+    @property
+    def calculated_price(self):
+        if self.overridden_price:
+            price = self.overridden_price
+        else:
+            price = self.item.price
+
+        if self.percentage_adjustment:
+            percentage = self.percentage_adjustment
+        else:
+            percentage = 0
+        if self.dollar_adjustment:
+            dollar = self.dollar_adjustment
+        else:
+            dollar = 0
+
+        calculated_price = price + (price * percentage) / 100 + dollar
+        return calculated_price
