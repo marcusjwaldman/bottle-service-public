@@ -1,7 +1,13 @@
 from partners.models import Menu, MenuStatus, MenuItem
+from restaurant.models import Restaurant
 
 
 def customer_menu(restaurant):
+    if restaurant is None:
+        raise TypeError('restaurant cannot be None')
+    if not isinstance(restaurant, Restaurant):
+        raise TypeError('restaurant must be an instance of Restaurant')
+
     menu_list = Menu.objects.filter(restaurant=restaurant, status=MenuStatus.APPROVED)
     menu_map = dict()
 

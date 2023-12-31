@@ -157,4 +157,5 @@ create database bottle_service_db;<br>
 drop user bottle_service_account@localhost; <br>
 CREATE USER 'bottle_service_account'@'localhost' IDENTIFIED BY '&@';<br>
 GRANT ALL PRIVILEGES ON bottle_service_db.* TO 'bottle_service_account'@'localhost'; <br>
+GRANT ALL PRIVILEGES ON test_bottle_service_db.* TO 'bottle_service_account'@'localhost'; <br>
 FLUSH PRIVILEGES; <br>

@@ -5,7 +5,8 @@ from distributor.models import Distributor, LocomotionType
 from location.models import Address
 from location.tools import GeoLocation
 from partners.matches import PartnerMatch
-from partners.models import Partners, PartnerStatus, Menu, MenuStatus
+from partners.menu import customer_menu
+from partners.models import Partners, PartnerStatus, Menu, MenuStatus, MenuItemCategory, Item, MenuItem
 from partners.views import update_status, update_menu_status
 from restaurant.models import Restaurant
 from django.urls import reverse
@@ -594,3 +595,169 @@ class MenuUpdateStatusTests(TestCase):
         menu = Menu.objects.get(id=menu_id)
 
         self.assertEqual(menu.status_enum, MenuStatus.DRAFT)
+
+class CustomerMenu(TestCase):
+    def test_grouped_by_category(self):
+        # Arrange
+        restaurant = Restaurant.objects.create(name="Restaurant A")
+        distributor = Distributor.objects.create(name="Distributor A")
+        menu = Menu.objects.create(restaurant=restaurant, distributor=distributor, status=MenuStatus.APPROVED)
+        category = MenuItemCategory.objects.get(name="Beverage")
+        item1 = Item.objects.create(name="Item 1", category=category, price=10, distributor=distributor, description="Test")
+        item2 = Item.objects.create(name="Item 2", category=category, price=15, distributor=distributor, description="Test")
+        menu_item1 = MenuItem.objects.create(parent_menu=menu, item=item1)
+        menu_item2 = MenuItem.objects.create(parent_menu=menu, item=item2)
+
+        # Act
+        result = customer_menu(restaurant)
+
+        # Assert
+        assert len(result) == 1
+        assert category in result
+        assert len(result[category]) == 2
+        assert menu_item1 in result[category]
+        assert menu_item2 in result[category]
+
+    def test_grouped_by_2_categories(self):
+        # Arrange
+        restaurant = Restaurant.objects.create(name="Restaurant A")
+        distributor = Distributor.objects.create(name="Distributor A")
+        menu = Menu.objects.create(restaurant=restaurant, distributor=distributor, status=MenuStatus.APPROVED)
+        category_1 = MenuItemCategory.objects.get(name="Red Wine")
+        category_2 = MenuItemCategory.objects.get(name="White Wine")
+        item1 = Item.objects.create(name="Item 1", category=category_1, price=10, distributor=distributor, description="Test")
+        item2 = Item.objects.create(name="Item 2", category=category_2, price=15, distributor=distributor, description="Test")
+        menu_item1 = MenuItem.objects.create(parent_menu=menu, item=item1)
+        menu_item2 = MenuItem.objects.create(parent_menu=menu, item=item2)
+
+        # Act
+        result = customer_menu(restaurant)
+
+        # Assert
+        assert len(result) == 2
+        assert category_1 in result
+        assert category_2 in result
+        assert len(result[category_1]) == 1
+        assert len(result[category_2]) == 1
+        assert menu_item1 in result[category_1]
+        assert menu_item2 in result[category_2]
+
+    def test_sorted_by_price(self):
+        # Arrange
+        restaurant = Restaurant.objects.create(name="Restaurant A")
+        distributor = Distributor.objects.create(name="Distributor A")
+        menu = Menu.objects.create(restaurant=restaurant, distributor=distributor, status=MenuStatus.APPROVED)
+        category = MenuItemCategory.objects.get(name="Beverage")
+        item1 = Item.objects.create(name="Item 1", category=category, price=15, distributor=distributor, description="Test")
+        item2 = Item.objects.create(name="Item 2", category=category, price=10, distributor=distributor, description="Test")
+        item3 = Item.objects.create(name="Item 3", category=category, price=12, distributor=distributor, description="Test")
+        menu_item1 = MenuItem.objects.create(parent_menu=menu, item=item1)
+        menu_item2 = MenuItem.objects.create(parent_menu=menu, item=item2)
+        menu_item3 = MenuItem.objects.create(parent_menu=menu, item=item3)
+
+        # Act
+        result = customer_menu(restaurant)
+
+        # Assert
+        assert menu_item2.id == result[category][0].id
+        assert menu_item3.id == result[category][1].id
+        assert menu_item1.id == result[category][2].id
+
+
+    def test_sorted_by_calcuated_price(self):
+        # Arrange
+        restaurant = Restaurant.objects.create(name="Restaurant A")
+        distributor = Distributor.objects.create(name="Distributor A")
+        menu = Menu.objects.create(restaurant=restaurant, distributor=distributor, status=MenuStatus.APPROVED)
+        category = MenuItemCategory.objects.get(name="Beverage")
+        item1 = Item.objects.create(name="Item 1", category=category, price=15, distributor=distributor, description="Test")
+        item2 = Item.objects.create(name="Item 2", category=category, price=10, distributor=distributor, description="Test")
+        item3 = Item.objects.create(name="Item 3", category=category, price=12, distributor=distributor, description="Test")
+        menu_item1 = MenuItem.objects.create(parent_menu=menu, item=item1, overridden_price=100)
+        menu_item2 = MenuItem.objects.create(parent_menu=menu, item=item2, percentage_adjustment=100)
+        menu_item3 = MenuItem.objects.create(parent_menu=menu, item=item3, dollar_adjustment=15)
+
+        # Act
+        result = customer_menu(restaurant)
+
+        # Assert
+        assert menu_item2.id == result[category][0].id
+        assert menu_item3.id == result[category][1].id
+        assert menu_item1.id == result[category][2].id
+
+    def test_only_restaurant_menus(self):
+        # Arrange
+        restaurant_a = Restaurant.objects.create(name="Restaurant A")
+        restaurant_b = Restaurant.objects.create(name="Restaurant B")
+        distributor = Distributor.objects.create(name="Distributor A")
+        menu_a = Menu.objects.create(restaurant=restaurant_a, distributor=distributor, status=MenuStatus.APPROVED)
+        menu_b = Menu.objects.create(restaurant=restaurant_b, distributor=distributor, status=MenuStatus.APPROVED)
+        category = MenuItemCategory.objects.get(name="Beverage")
+        item1 = Item.objects.create(name="Item 1", category=category, price=10, distributor=distributor, description="Test")
+        item2 = Item.objects.create(name="Item 2", category=category, price=15, distributor=distributor, description="Test")
+        menu_item1 = MenuItem.objects.create(parent_menu=menu_a, item=item1)
+        menu_item2 = MenuItem.objects.create(parent_menu=menu_b, item=item2)
+
+        # Act
+        result = customer_menu(restaurant_a)
+
+        # Assert
+        assert len(result) == 1
+        assert len(result[category]) == 1
+        assert menu_item1 in result[category]
+        assert menu_item2 not in result[category]
+
+
+    def test_only_approved_restaurant_menus(self):
+        # Arrange
+        restaurant_a = Restaurant.objects.create(name="Restaurant A")
+        distributor = Distributor.objects.create(name="Distributor A")
+        menu_a = Menu.objects.create(restaurant=restaurant_a, distributor=distributor, status=MenuStatus.APPROVED)
+        menu_b = Menu.objects.create(restaurant=restaurant_a, distributor=distributor, status=MenuStatus.DRAFT)
+        category = MenuItemCategory.objects.get(name="Beverage")
+        item1 = Item.objects.create(name="Item 1", category=category, price=10, distributor=distributor, description="Test")
+        item2 = Item.objects.create(name="Item 2", category=category, price=15, distributor=distributor, description="Test")
+        menu_item1 = MenuItem.objects.create(parent_menu=menu_a, item=item1)
+        menu_item2 = MenuItem.objects.create(parent_menu=menu_b, item=item2)
+
+        # Act
+        result = customer_menu(restaurant_a)
+
+        # Assert
+        assert len(result) == 1
+        assert len(result[category]) == 1
+        assert menu_item1 in result[category]
+        assert menu_item2 not in result[category]
+
+    def test_none_restaurant_parameter(self):
+        # Act
+        with self.assertRaises(TypeError):
+            customer_menu(None)
+
+    def test_invalid_restaurant_parameter(self):
+        # Arrange
+        restaurant = "Restaurant A"
+
+        # Act and Assert
+        with self.assertRaises(TypeError):
+            customer_menu(restaurant)
+
+
+    def test_no_approved_restaurant_menus(self):
+        # Arrange
+        restaurant_a = Restaurant.objects.create(name="Restaurant A")
+        restaurant_b = Restaurant.objects.create(name="Restaurant B")
+        distributor = Distributor.objects.create(name="Distributor A")
+        menu_a = Menu.objects.create(restaurant=restaurant_a, distributor=distributor, status=MenuStatus.APPROVED)
+        menu_b = Menu.objects.create(restaurant=restaurant_a, distributor=distributor, status=MenuStatus.DRAFT)
+        category = MenuItemCategory.objects.get(name="Beverage")
+        item1 = Item.objects.create(name="Item 1", category=category, price=10, distributor=distributor, description="Test")
+        item2 = Item.objects.create(name="Item 2", category=category, price=15, distributor=distributor, description="Test")
+        menu_item1 = MenuItem.objects.create(parent_menu=menu_a, item=item1)
+        menu_item2 = MenuItem.objects.create(parent_menu=menu_b, item=item2)
+
+        # Act
+        result = customer_menu(restaurant_b)
+
+        # Assert
+        assert result == {}
