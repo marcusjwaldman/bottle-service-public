@@ -596,7 +596,8 @@ class MenuUpdateStatusTests(TestCase):
 
         self.assertEqual(menu.status_enum, MenuStatus.DRAFT)
 
-class CustomerMenu(TestCase):
+
+class CustomerMenuTests(TestCase):
     def test_grouped_by_category(self):
         # Arrange
         restaurant = Restaurant.objects.create(name="Restaurant A")
@@ -612,11 +613,11 @@ class CustomerMenu(TestCase):
         result = customer_menu(restaurant)
 
         # Assert
-        assert len(result) == 1
-        assert category in result
-        assert len(result[category]) == 2
-        assert menu_item1 in result[category]
-        assert menu_item2 in result[category]
+        self.assertEqual(len(result), 1)
+        self.assertIn(category, result)
+        self.assertEqual(len(result[category]), 2)
+        self.assertIn(menu_item1, result[category])
+        self.assertIn(menu_item2, result[category])
 
     def test_grouped_by_2_categories(self):
         # Arrange
@@ -634,13 +635,13 @@ class CustomerMenu(TestCase):
         result = customer_menu(restaurant)
 
         # Assert
-        assert len(result) == 2
-        assert category_1 in result
-        assert category_2 in result
-        assert len(result[category_1]) == 1
-        assert len(result[category_2]) == 1
-        assert menu_item1 in result[category_1]
-        assert menu_item2 in result[category_2]
+        self.assertEqual(len(result), 2)
+        self.assertIn(category_1, result)
+        self.assertIn(category_2, result)
+        self.assertEqual(len(result[category_1]), 1)
+        self.assertEqual(len(result[category_2]), 1)
+        self.assertIn(menu_item1, result[category_1])
+        self.assertIn(menu_item2, result[category_2])
 
     def test_sorted_by_price(self):
         # Arrange
@@ -659,9 +660,9 @@ class CustomerMenu(TestCase):
         result = customer_menu(restaurant)
 
         # Assert
-        assert menu_item2.id == result[category][0].id
-        assert menu_item3.id == result[category][1].id
-        assert menu_item1.id == result[category][2].id
+        self.assertEqual(menu_item2.id, result[category][0].id)
+        self.assertEqual(menu_item3.id, result[category][1].id)
+        self.assertEqual(menu_item1.id, result[category][2].id)
 
 
     def test_sorted_by_calcuated_price(self):
@@ -681,9 +682,9 @@ class CustomerMenu(TestCase):
         result = customer_menu(restaurant)
 
         # Assert
-        assert menu_item2.id == result[category][0].id
-        assert menu_item3.id == result[category][1].id
-        assert menu_item1.id == result[category][2].id
+        self.assertEqual(menu_item2.id, result[category][0].id)
+        self.assertEqual(menu_item3.id, result[category][1].id)
+        self.assertEqual(menu_item1.id, result[category][2].id)
 
     def test_only_restaurant_menus(self):
         # Arrange
@@ -702,10 +703,10 @@ class CustomerMenu(TestCase):
         result = customer_menu(restaurant_a)
 
         # Assert
-        assert len(result) == 1
-        assert len(result[category]) == 1
-        assert menu_item1 in result[category]
-        assert menu_item2 not in result[category]
+        self.assertEqual(len(result), 1)
+        self.assertEqual(len(result[category]), 1)
+        self.assertIn(menu_item1,result[category])
+        self.assertNotIn(menu_item2, result[category])
 
 
     def test_only_approved_restaurant_menus(self):
@@ -724,10 +725,10 @@ class CustomerMenu(TestCase):
         result = customer_menu(restaurant_a)
 
         # Assert
-        assert len(result) == 1
-        assert len(result[category]) == 1
-        assert menu_item1 in result[category]
-        assert menu_item2 not in result[category]
+        self.assertEqual(len(result), 1)
+        self.assertEqual(len(result[category]), 1)
+        self.assertIn(menu_item1,result[category])
+        self.assertNotIn(menu_item2,result[category])
 
     def test_none_restaurant_parameter(self):
         # Act
@@ -741,7 +742,6 @@ class CustomerMenu(TestCase):
         # Act and Assert
         with self.assertRaises(TypeError):
             customer_menu(restaurant)
-
 
     def test_no_approved_restaurant_menus(self):
         # Arrange
@@ -760,4 +760,73 @@ class CustomerMenu(TestCase):
         result = customer_menu(restaurant_b)
 
         # Assert
-        assert result == {}
+        self.assertEqual(result, {})
+
+
+class CalculatePriceTest(TestCase):
+
+    def setUp(self):
+        self.distributor = Distributor.objects.create(name="Distributor")
+        self.restaurant = Restaurant.objects.create(name="Restaurant")
+        self.item = Item.objects.create(name="Item", price=10, distributor=self.distributor, description="Test")
+        self.menu = Menu.objects.create(
+            restaurant=self.restaurant,
+            distributor=self.distributor,
+            status=MenuStatus.APPROVED
+        )
+        self.menu_item = MenuItem(id=1, parent_menu=self.menu, item=self.item, overridden_price=None,
+                             percentage_adjustment=None, dollar_adjustment=None)
+
+        super().setUp()
+
+    def test_calculated_price_all_fields_null(self):
+        expected_price = self.menu_item.item.price
+        self.assertEqual(self.menu_item.calculated_price, expected_price)
+
+    def test_calculated_price_overridden_price_not_null(self):
+        self.menu_item.overridden_price = 20
+        expected_price = self.menu_item.overridden_price
+        self.assertEqual(self.menu_item.calculated_price, expected_price)
+
+    def test_calculated_price_percentage_adjustment_not_null(self):
+        self.menu_item.percentage_adjustment = 10.00
+        expected_price = (self.menu_item.item.price + (self.menu_item.item.price * self.menu_item.percentage_adjustment)
+                          / 100)
+        self.assertEqual(self.menu_item.calculated_price, expected_price)
+
+    def test_calculated_price_overridden_price_zero(self):
+        self.menu_item.overridden_price = 0
+        expected_price = self.menu_item.item.price
+        self.assertEqual(self.menu_item.calculated_price, expected_price)
+
+    def test_calculated_price_percentage_adjustment_zero(self):
+        self.menu_item.percentage_adjustment = 0
+        expected_price = self.menu_item.item.price
+        self.assertEqual(self.menu_item.calculated_price, expected_price)
+
+    def test_calculated_price_dollar_adjustment_zero(self):
+        self.menu_item.dollar_adjustment = 0
+        expected_price = self.menu_item.item.price
+        self.assertEqual(self.menu_item.calculated_price, expected_price)
+
+    def test_calculated_price_overridden_price_not_null_and_dollar_adjustment(self):
+        self.menu_item.overridden_price = 20
+        self.menu_item.dollar_adjustment = 10
+        expected_price = self.menu_item.overridden_price + self.menu_item.dollar_adjustment
+        self.assertEqual(self.menu_item.calculated_price, expected_price)
+
+    def test_calculated_price_overridden_price_not_null_and_percentage_adjustment(self):
+        self.menu_item.overridden_price = 20
+        self.menu_item.percentage_adjustment = 10
+        expected_price = (self.menu_item.overridden_price +
+                          (self.menu_item.overridden_price * self.menu_item.percentage_adjustment) / 100)
+        self.assertEqual(self.menu_item.calculated_price, expected_price)
+
+    def test_calculated_price_overridden_price_not_null_and_percentage_adjustment_and_dollar_adjustment(self):
+        self.menu_item.overridden_price = 20
+        self.menu_item.percentage_adjustment = 10
+        self.menu_item.dollar_adjustment = 10
+        expected_price = (self.menu_item.overridden_price +
+                          (self.menu_item.overridden_price * self.menu_item.percentage_adjustment) / 100 +
+                          self.menu_item.dollar_adjustment)
+        self.assertEqual(self.menu_item.calculated_price, expected_price)
