@@ -210,8 +210,8 @@ def distributor_view_menu(request, menu_id):
             if menu.distributor == user.distributor:
                 menu_items = MenuItem.objects.filter(parent_menu=menu)
 
-                return render(request, 'distributor/distributor_edit_menu.html', {'menu': menu,
-                                                                              'menu_items': menu_items})
+                return render(request, 'distributor/distributor_view_menu.html', {'menu': menu,
+                                                            'menu_items': menu_items})
             else:
                 raise Exception('You are not authorized to view this menu')
 
