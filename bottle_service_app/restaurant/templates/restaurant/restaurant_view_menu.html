@@ -78,8 +78,24 @@
     <h1>
         Distributor Menu - {{ menu.distributor.name }}</h1>
 
-{% include 'partners/menu_item_list_sub.html' with menu_item_list=menu_item_list  %}
-    <hr>
+    {% for menu_item in menu_items %}
+        <ol>
+            <li>
+                <table>
+                    <tr>
+                        <td class="inline" style="margin-right: 10px;">
+                            {{ menu_item.item.name }} - ${{ menu_item.calculated_price }} - {{ menu_item.item.description }}
+                            ({% if menu_item.item.category %}
+                                {{ menu_item.item.category.name }}
+                            {% else %}
+                                No Category
+                            {% endif %})
+                        </td>
+                    </tr>
+                </table>
+            </li>
+        </ol>
+    {% endfor %}
 
 
     <a href="{% url 'restaurant_home' %}">Home</a>
