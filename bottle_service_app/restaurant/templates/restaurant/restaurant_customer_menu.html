@@ -91,11 +91,11 @@
         {% for item in items %}
         <li>
             <tr>
-            <td title="{{ item.description }}">
-            {{ item.name }}
+            <td title="{{ item.item.description }}">
+            {{ item.item.name }}
             </td>
             <td>
-            ${{ item.price }}
+            ${{ item.calculated_price }}
             </td>
             <td>
             {{ item.parent_menu.distributor.name }}

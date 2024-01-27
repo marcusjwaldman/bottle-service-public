@@ -8,6 +8,16 @@
           display: inline-block;
         }
 
+    .checkbox-container {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .checkbox-container input[type="checkbox"] {
+        margin-right: 10px;  /* Adjust the margin as needed */
+    }
+
         body {
             font-family: 'Arial', sans-serif;
             margin: 20px;
@@ -76,7 +86,9 @@
 </head>
 <body>
     <h1>
-        Distributor Menu - {{ menu.distributor.name }}</h1>
+        View Distributor Menu - {{ menu.restaurant.name }}</h1>
+
+    <p><strong>View Items:</strong></p>
 
     {% for menu_item in menu_items %}
         <ol>
@@ -97,9 +109,9 @@
         </ol>
     {% endfor %}
 
-
-    <a href="{% url 'restaurant_home' %}">Home</a>
-    <a href="{% url 'restaurant_menus' %}">Menus</a>
+    <a href="{% url 'distributor_home' %}">Home</a>
+    <a href="{% url 'distributor_menus' %}">Menus</a>
     <a href="{% url 'authentication:logout' %}">Logout</a>
+
 </body>
 </html>

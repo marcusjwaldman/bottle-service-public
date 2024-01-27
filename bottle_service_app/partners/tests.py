@@ -5,7 +5,8 @@ from distributor.models import Distributor, LocomotionType
 from location.models import Address
 from location.tools import GeoLocation
 from partners.matches import PartnerMatch
-from partners.models import Partners, PartnerStatus, Menu, MenuStatus
+from partners.menu import customer_menu
+from partners.models import Partners, PartnerStatus, Menu, MenuStatus, MenuItemCategory, Item, MenuItem
 from partners.views import update_status, update_menu_status
 from restaurant.models import Restaurant
 from django.urls import reverse
@@ -594,3 +595,238 @@ class MenuUpdateStatusTests(TestCase):
         menu = Menu.objects.get(id=menu_id)
 
         self.assertEqual(menu.status_enum, MenuStatus.DRAFT)
+
+
+class CustomerMenuTests(TestCase):
+    def test_grouped_by_category(self):
+        # Arrange
+        restaurant = Restaurant.objects.create(name="Restaurant A")
+        distributor = Distributor.objects.create(name="Distributor A")
+        menu = Menu.objects.create(restaurant=restaurant, distributor=distributor, status=MenuStatus.APPROVED)
+        category = MenuItemCategory.objects.get(name="Beverage")
+        item1 = Item.objects.create(name="Item 1", category=category, price=10, distributor=distributor, description="Test")
+        item2 = Item.objects.create(name="Item 2", category=category, price=15, distributor=distributor, description="Test")
+        menu_item1 = MenuItem.objects.create(parent_menu=menu, item=item1)
+        menu_item2 = MenuItem.objects.create(parent_menu=menu, item=item2)
+
+        # Act
+        result = customer_menu(restaurant)
+
+        # Assert
+        self.assertEqual(len(result), 1)
+        self.assertIn(category, result)
+        self.assertEqual(len(result[category]), 2)
+        self.assertIn(menu_item1, result[category])
+        self.assertIn(menu_item2, result[category])
+
+    def test_grouped_by_2_categories(self):
+        # Arrange
+        restaurant = Restaurant.objects.create(name="Restaurant A")
+        distributor = Distributor.objects.create(name="Distributor A")
+        menu = Menu.objects.create(restaurant=restaurant, distributor=distributor, status=MenuStatus.APPROVED)
+        category_1 = MenuItemCategory.objects.get(name="Red Wine")
+        category_2 = MenuItemCategory.objects.get(name="White Wine")
+        item1 = Item.objects.create(name="Item 1", category=category_1, price=10, distributor=distributor, description="Test")
+        item2 = Item.objects.create(name="Item 2", category=category_2, price=15, distributor=distributor, description="Test")
+        menu_item1 = MenuItem.objects.create(parent_menu=menu, item=item1)
+        menu_item2 = MenuItem.objects.create(parent_menu=menu, item=item2)
+
+        # Act
+        result = customer_menu(restaurant)
+
+        # Assert
+        self.assertEqual(len(result), 2)
+        self.assertIn(category_1, result)
+        self.assertIn(category_2, result)
+        self.assertEqual(len(result[category_1]), 1)
+        self.assertEqual(len(result[category_2]), 1)
+        self.assertIn(menu_item1, result[category_1])
+        self.assertIn(menu_item2, result[category_2])
+
+    def test_sorted_by_price(self):
+        # Arrange
+        restaurant = Restaurant.objects.create(name="Restaurant A")
+        distributor = Distributor.objects.create(name="Distributor A")
+        menu = Menu.objects.create(restaurant=restaurant, distributor=distributor, status=MenuStatus.APPROVED)
+        category = MenuItemCategory.objects.get(name="Beverage")
+        item1 = Item.objects.create(name="Item 1", category=category, price=15, distributor=distributor, description="Test")
+        item2 = Item.objects.create(name="Item 2", category=category, price=10, distributor=distributor, description="Test")
+        item3 = Item.objects.create(name="Item 3", category=category, price=12, distributor=distributor, description="Test")
+        menu_item1 = MenuItem.objects.create(parent_menu=menu, item=item1)
+        menu_item2 = MenuItem.objects.create(parent_menu=menu, item=item2)
+        menu_item3 = MenuItem.objects.create(parent_menu=menu, item=item3)
+
+        # Act
+        result = customer_menu(restaurant)
+
+        # Assert
+        self.assertEqual(menu_item2.id, result[category][0].id)
+        self.assertEqual(menu_item3.id, result[category][1].id)
+        self.assertEqual(menu_item1.id, result[category][2].id)
+
+
+    def test_sorted_by_calcuated_price(self):
+        # Arrange
+        restaurant = Restaurant.objects.create(name="Restaurant A")
+        distributor = Distributor.objects.create(name="Distributor A")
+        menu = Menu.objects.create(restaurant=restaurant, distributor=distributor, status=MenuStatus.APPROVED)
+        category = MenuItemCategory.objects.get(name="Beverage")
+        item1 = Item.objects.create(name="Item 1", category=category, price=15, distributor=distributor, description="Test")
+        item2 = Item.objects.create(name="Item 2", category=category, price=10, distributor=distributor, description="Test")
+        item3 = Item.objects.create(name="Item 3", category=category, price=12, distributor=distributor, description="Test")
+        menu_item1 = MenuItem.objects.create(parent_menu=menu, item=item1, overridden_price=100)
+        menu_item2 = MenuItem.objects.create(parent_menu=menu, item=item2, percentage_adjustment=100)
+        menu_item3 = MenuItem.objects.create(parent_menu=menu, item=item3, dollar_adjustment=15)
+
+        # Act
+        result = customer_menu(restaurant)
+
+        # Assert
+        self.assertEqual(menu_item2.id, result[category][0].id)
+        self.assertEqual(menu_item3.id, result[category][1].id)
+        self.assertEqual(menu_item1.id, result[category][2].id)
+
+    def test_only_restaurant_menus(self):
+        # Arrange
+        restaurant_a = Restaurant.objects.create(name="Restaurant A")
+        restaurant_b = Restaurant.objects.create(name="Restaurant B")
+        distributor = Distributor.objects.create(name="Distributor A")
+        menu_a = Menu.objects.create(restaurant=restaurant_a, distributor=distributor, status=MenuStatus.APPROVED)
+        menu_b = Menu.objects.create(restaurant=restaurant_b, distributor=distributor, status=MenuStatus.APPROVED)
+        category = MenuItemCategory.objects.get(name="Beverage")
+        item1 = Item.objects.create(name="Item 1", category=category, price=10, distributor=distributor, description="Test")
+        item2 = Item.objects.create(name="Item 2", category=category, price=15, distributor=distributor, description="Test")
+        menu_item1 = MenuItem.objects.create(parent_menu=menu_a, item=item1)
+        menu_item2 = MenuItem.objects.create(parent_menu=menu_b, item=item2)
+
+        # Act
+        result = customer_menu(restaurant_a)
+
+        # Assert
+        self.assertEqual(len(result), 1)
+        self.assertEqual(len(result[category]), 1)
+        self.assertIn(menu_item1,result[category])
+        self.assertNotIn(menu_item2, result[category])
+
+
+    def test_only_approved_restaurant_menus(self):
+        # Arrange
+        restaurant_a = Restaurant.objects.create(name="Restaurant A")
+        distributor = Distributor.objects.create(name="Distributor A")
+        menu_a = Menu.objects.create(restaurant=restaurant_a, distributor=distributor, status=MenuStatus.APPROVED)
+        menu_b = Menu.objects.create(restaurant=restaurant_a, distributor=distributor, status=MenuStatus.DRAFT)
+        category = MenuItemCategory.objects.get(name="Beverage")
+        item1 = Item.objects.create(name="Item 1", category=category, price=10, distributor=distributor, description="Test")
+        item2 = Item.objects.create(name="Item 2", category=category, price=15, distributor=distributor, description="Test")
+        menu_item1 = MenuItem.objects.create(parent_menu=menu_a, item=item1)
+        menu_item2 = MenuItem.objects.create(parent_menu=menu_b, item=item2)
+
+        # Act
+        result = customer_menu(restaurant_a)
+
+        # Assert
+        self.assertEqual(len(result), 1)
+        self.assertEqual(len(result[category]), 1)
+        self.assertIn(menu_item1,result[category])
+        self.assertNotIn(menu_item2,result[category])
+
+    def test_none_restaurant_parameter(self):
+        # Act
+        with self.assertRaises(TypeError):
+            customer_menu(None)
+
+    def test_invalid_restaurant_parameter(self):
+        # Arrange
+        restaurant = "Restaurant A"
+
+        # Act and Assert
+        with self.assertRaises(TypeError):
+            customer_menu(restaurant)
+
+    def test_no_approved_restaurant_menus(self):
+        # Arrange
+        restaurant_a = Restaurant.objects.create(name="Restaurant A")
+        restaurant_b = Restaurant.objects.create(name="Restaurant B")
+        distributor = Distributor.objects.create(name="Distributor A")
+        menu_a = Menu.objects.create(restaurant=restaurant_a, distributor=distributor, status=MenuStatus.APPROVED)
+        menu_b = Menu.objects.create(restaurant=restaurant_a, distributor=distributor, status=MenuStatus.DRAFT)
+        category = MenuItemCategory.objects.get(name="Beverage")
+        item1 = Item.objects.create(name="Item 1", category=category, price=10, distributor=distributor, description="Test")
+        item2 = Item.objects.create(name="Item 2", category=category, price=15, distributor=distributor, description="Test")
+        menu_item1 = MenuItem.objects.create(parent_menu=menu_a, item=item1)
+        menu_item2 = MenuItem.objects.create(parent_menu=menu_b, item=item2)
+
+        # Act
+        result = customer_menu(restaurant_b)
+
+        # Assert
+        self.assertEqual(result, {})
+
+
+class CalculatePriceTest(TestCase):
+
+    def setUp(self):
+        self.distributor = Distributor.objects.create(name="Distributor")
+        self.restaurant = Restaurant.objects.create(name="Restaurant")
+        self.item = Item.objects.create(name="Item", price=10, distributor=self.distributor, description="Test")
+        self.menu = Menu.objects.create(
+            restaurant=self.restaurant,
+            distributor=self.distributor,
+            status=MenuStatus.APPROVED
+        )
+        self.menu_item = MenuItem(id=1, parent_menu=self.menu, item=self.item, overridden_price=None,
+                             percentage_adjustment=None, dollar_adjustment=None)
+
+        super().setUp()
+
+    def test_calculated_price_all_fields_null(self):
+        expected_price = self.menu_item.item.price
+        self.assertEqual(self.menu_item.calculated_price, expected_price)
+
+    def test_calculated_price_overridden_price_not_null(self):
+        self.menu_item.overridden_price = 20
+        expected_price = self.menu_item.overridden_price
+        self.assertEqual(self.menu_item.calculated_price, expected_price)
+
+    def test_calculated_price_percentage_adjustment_not_null(self):
+        self.menu_item.percentage_adjustment = 10.00
+        expected_price = (self.menu_item.item.price + (self.menu_item.item.price * self.menu_item.percentage_adjustment)
+                          / 100)
+        self.assertEqual(self.menu_item.calculated_price, expected_price)
+
+    def test_calculated_price_overridden_price_zero(self):
+        self.menu_item.overridden_price = 0
+        expected_price = self.menu_item.item.price
+        self.assertEqual(self.menu_item.calculated_price, expected_price)
+
+    def test_calculated_price_percentage_adjustment_zero(self):
+        self.menu_item.percentage_adjustment = 0
+        expected_price = self.menu_item.item.price
+        self.assertEqual(self.menu_item.calculated_price, expected_price)
+
+    def test_calculated_price_dollar_adjustment_zero(self):
+        self.menu_item.dollar_adjustment = 0
+        expected_price = self.menu_item.item.price
+        self.assertEqual(self.menu_item.calculated_price, expected_price)
+
+    def test_calculated_price_overridden_price_not_null_and_dollar_adjustment(self):
+        self.menu_item.overridden_price = 20
+        self.menu_item.dollar_adjustment = 10
+        expected_price = self.menu_item.overridden_price + self.menu_item.dollar_adjustment
+        self.assertEqual(self.menu_item.calculated_price, expected_price)
+
+    def test_calculated_price_overridden_price_not_null_and_percentage_adjustment(self):
+        self.menu_item.overridden_price = 20
+        self.menu_item.percentage_adjustment = 10
+        expected_price = (self.menu_item.overridden_price +
+                          (self.menu_item.overridden_price * self.menu_item.percentage_adjustment) / 100)
+        self.assertEqual(self.menu_item.calculated_price, expected_price)
+
+    def test_calculated_price_overridden_price_not_null_and_percentage_adjustment_and_dollar_adjustment(self):
+        self.menu_item.overridden_price = 20
+        self.menu_item.percentage_adjustment = 10
+        self.menu_item.dollar_adjustment = 10
+        expected_price = (self.menu_item.overridden_price +
+                          (self.menu_item.overridden_price * self.menu_item.percentage_adjustment) / 100 +
+                          self.menu_item.dollar_adjustment)
+        self.assertEqual(self.menu_item.calculated_price, expected_price)

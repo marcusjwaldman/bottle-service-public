@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Distributor Menu</title>
+    <title>Distributor Item</title>
     <style>
         .inline {
           display: inline-block;
@@ -75,31 +75,16 @@
     </style>
 </head>
 <body>
-    <h1>
-        Distributor Menu - {{ menu.distributor.name }}</h1>
+    <h1>Edit Distributor Item</h1>
+    {% if item_form is not None %}
+    <form method="post">
+        {% csrf_token %}
+        {{ item_form.as_p }}
+        <button class="big_button" type="submit">Edit</button>
+    </form>
+    {% endif %}
 
-    {% for menu_item in menu_items %}
-        <ol>
-            <li>
-                <table>
-                    <tr>
-                        <td class="inline" style="margin-right: 10px;">
-                            {{ menu_item.item.name }} - ${{ menu_item.calculated_price }} - {{ menu_item.item.description }}
-                            ({% if menu_item.item.category %}
-                                {{ menu_item.item.category.name }}
-                            {% else %}
-                                No Category
-                            {% endif %})
-                        </td>
-                    </tr>
-                </table>
-            </li>
-        </ol>
-    {% endfor %}
-
-
-    <a href="{% url 'restaurant_home' %}">Home</a>
-    <a href="{% url 'restaurant_menus' %}">Menus</a>
+    <a href="{% url 'distributor_edit_items' %}">Cancel</a>
     <a href="{% url 'authentication:logout' %}">Logout</a>
 </body>
 </html>
