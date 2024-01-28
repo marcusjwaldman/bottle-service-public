@@ -94,6 +94,14 @@
                 {% if item_form is not None %}
                     <a href="{% url 'distributor_edit_item' item_id=item.id %}" class="inline">EDIT</a>
                     <a href="{% url 'distributor_delete_item' item_id=item.id %}" class="inline">DELETE</a>
+                    {% if item.out_of_stock %}
+                        <a href="{% url 'distributor_stock_item' item_id=item.id set_stock='false' %}" class="inline">BACK IN STOCK</a>
+                        <div class="inline" style="margin-right: 10px;">
+                            <span style="color: red;">OUT OF STOCK</span>
+                        </div>
+                    {% else %}
+                        <a href="{% url 'distributor_stock_item' item_id=item.id set_stock='true' %}" class="inline">OUT OF STOCK</a>
+                    {% endif %}
                 {% endif %}
                 </p>
             </li>

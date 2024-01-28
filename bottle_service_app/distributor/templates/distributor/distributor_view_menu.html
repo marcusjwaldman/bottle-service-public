@@ -102,6 +102,12 @@
                             {% else %}
                                 No Category
                             {% endif %})
+                    {% if menu_item.item.out_of_stock %}
+                        <div class="inline" style="margin-right: 10px;">
+                            <span style="color: red;">OUT OF STOCK</span>
+                        </div>
+                    {% endif %}
+
                         </td>
                     </tr>
                 </table>

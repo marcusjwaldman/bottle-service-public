@@ -253,6 +253,23 @@ def distributor_delete_item(request, item_id):
     return redirect(f'/distributor/distributor-edit-items/')
 
 
+@bottle_service_auth(roles=[BottleServiceAccountType.DISTRIBUTOR])
+def distributor_stock_item(request, item_id, set_stock):
+    set_stock_bool = set_stock.lower() == 'true'
+    user = BottleServiceSession.get_user(request)
+    if user is not None:
+        try:
+            item = Item.objects.get(id=item_id, distributor=user.distributor)
+        except Item.DoesNotExist:
+            item = None
+
+        if item is not None:
+            item.out_of_stock = set_stock_bool
+            item.save()
+
+    return redirect(f'/distributor/distributor-edit-items/')
+
+
 def distributor_edit_item(request, item_id):
     user = BottleServiceSession.get_user(request)
     if user is not None:
