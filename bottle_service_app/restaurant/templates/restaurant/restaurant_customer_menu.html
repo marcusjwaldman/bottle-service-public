@@ -88,19 +88,26 @@
     <th colspan="3">{{ section.name }}</th>
                 </tr>
     <ol>
-        {% for item in items %}
+        {% for menu_item in items %}
         <li>
-            <tr>
-            <td title="{{ item.item.description }}">
-            {{ item.item.name }}
-            </td>
-            <td>
-            ${{ item.calculated_price }}
-            </td>
-            <td>
-            {{ item.parent_menu.distributor.name }}
-            </td>
-            </tr>
+                <tr>
+                    <td title="{{ item.item.description }}">
+                    {{ menu_item.item.name }}
+                    </td>
+                    <td>
+                    ${{ menu_item.calculated_price }}
+                    </td>
+                    <td>
+                    {{ menu_item.parent_menu.distributor.name }}
+                    </td>
+                    <td>
+                        {% if menu_item.item.out_of_stock %}
+                            <div class="inline" style="margin-right: 10px;">
+                                <span style="color: red;">OUT OF STOCK</span>
+                            </div>
+                        {% endif %}
+                    </td>
+                </tr>
         </li>
         {% endfor %}
     </ol>
