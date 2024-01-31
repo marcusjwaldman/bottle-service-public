@@ -102,6 +102,11 @@
                     {% else %}
                         <a href="{% url 'distributor_stock_item' item_id=item.id set_stock='true' %}" class="inline">OUT OF STOCK</a>
                     {% endif %}
+                    {% if item.in_menu %}
+                        <div class="inline" style="margin-right: 10px;" >
+                            <span style="color: red;">Active Item - Deleting or Editing this item will set it to a Restaurant Pending State</span>
+                        </div>
+                    {% endif %}
                 {% endif %}
                 </p>
             </li>

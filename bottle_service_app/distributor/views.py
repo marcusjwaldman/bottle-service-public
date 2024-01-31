@@ -5,7 +5,7 @@ from authentication.session import BottleServiceSession
 from location.tools import GeoLocation
 from partners.forms import ItemForm
 from partners.matches import PartnerMatch
-from partners.models import Partners, Menu, PartnerStatus, MenuItem, Item
+from partners.models import Partners, Menu, PartnerStatus, MenuItem, Item, MenuStatus
 from .forms import AddressForm, DistributorForm
 from .models import Distributor
 
@@ -223,6 +223,8 @@ def distributor_edit_items(request):
 
         if request.method == 'GET':
             items = Item.objects.filter(distributor=user.distributor)
+            for item in items:
+                add_in_menu_attribute(item, active_only=True)
             item_form = ItemForm()
 
             return render(request, 'distributor/distributor_edit_items.html', {'items': items,
@@ -237,6 +239,19 @@ def distributor_edit_items(request):
     return redirect('/distributor/distributor-edit-items/')
 
 
+def menus_containing_item(item, active_only=False):
+    if active_only:
+        menus = Menu.objects.filter(menuitem__item=item, status=MenuStatus.APPROVED)
+    else:
+        menus = Menu.objects.filter(menuitem__item=item)
+    return menus
+
+
+def add_in_menu_attribute(item, active_only=False):
+    item.in_menu = len(menus_containing_item(item, active_only)) > 0
+    return item
+
+
 @bottle_service_auth(roles=[BottleServiceAccountType.DISTRIBUTOR])
 @confirmation_required("Are you sure you want to delete this item?")
 def distributor_delete_item(request, item_id):
@@ -248,6 +263,7 @@ def distributor_delete_item(request, item_id):
             item = None
 
         if item is not None:
+            update_menus_approved_status(item)
             item.delete()
 
     return redirect(f'/distributor/distributor-edit-items/')
@@ -275,6 +291,7 @@ def distributor_edit_item(request, item_id):
     if user is not None:
         try:
             item = Item.objects.get(id=item_id, distributor=user.distributor)
+            add_in_menu_attribute(item)
         except Item.DoesNotExist:
             item = None
 
@@ -288,6 +305,12 @@ def distributor_edit_item(request, item_id):
                 item.id = item_id
                 item.distributor = user.distributor
                 item.save()
+                update_menus_approved_status(item)
             return redirect(f'/distributor/distributor-edit-items/')
 
 
+def update_menus_approved_status(item):
+    menus = menus_containing_item(item)
+    for menu in menus:
+        menu.status = MenuStatus.PENDING_RESTAURANT_APPROVAL
+        menu.save()

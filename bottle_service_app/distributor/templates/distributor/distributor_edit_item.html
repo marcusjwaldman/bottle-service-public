@@ -79,6 +79,11 @@
     {% if item_form is not None %}
     <form method="post">
         {% csrf_token %}
+        {% if item_form.instance.in_menu %}
+                        <div class="inline" style="margin-right: 10px;" >
+                            <span style="color: red;">Active Item - Editing this item will set all active menus containing this item to a Restaurant Pending State</span>
+                        </div>
+                    {% endif %}
         {{ item_form.as_p }}
         <button class="big_button" type="submit">Edit</button>
     </form>
