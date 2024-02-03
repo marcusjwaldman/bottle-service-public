@@ -1,3 +1,4 @@
+from django.db.models import QuerySet
 from django.test import TestCase
 from unittest.mock import patch, Mock
 
@@ -5,7 +6,7 @@ from distributor.models import Distributor, LocomotionType
 from location.models import Address
 from location.tools import GeoLocation
 from partners.matches import PartnerMatch
-from partners.menu import customer_menu
+from partners.menu import customer_menu, menus_containing_item, add_in_menu_attribute
 from partners.models import Partners, PartnerStatus, Menu, MenuStatus, MenuItemCategory, Item, MenuItem
 from partners.views import update_status, update_menu_status
 from restaurant.models import Restaurant
@@ -830,3 +831,146 @@ class CalculatePriceTest(TestCase):
                           (self.menu_item.overridden_price * self.menu_item.percentage_adjustment) / 100 +
                           self.menu_item.dollar_adjustment)
         self.assertEqual(self.menu_item.calculated_price, expected_price)
+
+
+class MenuContainingItemsTest(TestCase):
+
+    def setUp(self):
+        super().setUp()
+
+    def test_return_queryset_of_menus_containing_item(self):
+        # Create a menu and menu item
+        distributor = Distributor.objects.create()
+        restaurant = Restaurant.objects.create()
+        menu = Menu.objects.create(distributor=distributor, restaurant=restaurant, status=MenuStatus.APPROVED)
+        item = Item.objects.create(name="Item", price=10, distributor=distributor, description="Test")
+        menu_item = MenuItem.objects.create(parent_menu=menu, item=item)
+        menu.menu_items.add(menu_item)
+
+        # Call the function being tested
+        result = menus_containing_item(item)
+
+        # Check that the result is a queryset containing the menu
+        self.assertIsInstance(result, QuerySet)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0], menu)
+
+    def test_return_queryset_of_menus_containing_item_not_approved_menu_active_only_not_approved(self):
+        # Create a menu and menu item
+        distributor = Distributor.objects.create()
+        restaurant = Restaurant.objects.create()
+        menu = Menu.objects.create(distributor=distributor, restaurant=restaurant, status=MenuStatus.DRAFT)
+        item = Item.objects.create(name="Item", price=10, distributor=distributor, description="Test")
+        menu_item = MenuItem.objects.create(parent_menu=menu, item=item)
+        menu.menu_items.add(menu_item)
+
+        # Call the function being tested
+        result = menus_containing_item(item, active_only=True)
+
+        # Check that the result is a queryset containing the menu
+        self.assertIsInstance(result, QuerySet)
+        self.assertEqual(len(result), 0)
+
+    def test_return_queryset_of_menus_containing_item_not_approved_menu_active_only_approved(self):
+        # Create a menu and menu item
+        distributor = Distributor.objects.create()
+        restaurant = Restaurant.objects.create()
+        menu = Menu.objects.create(distributor=distributor, restaurant=restaurant, status=MenuStatus.APPROVED)
+        item = Item.objects.create(name="Item", price=10, distributor=distributor, description="Test")
+        menu_item = MenuItem.objects.create(parent_menu=menu, item=item)
+        menu.menu_items.add(menu_item)
+
+        # Call the function being tested
+        result = menus_containing_item(item, active_only=True)
+
+        # Check that the result is a queryset containing the menu
+        self.assertIsInstance(result, QuerySet)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].id, menu.id)
+
+    def test_return_queryset_of_menus_containing_2_items(self):
+        # Create a menu and menu item
+        distributor = Distributor.objects.create()
+        restaurant = Restaurant.objects.create()
+        menu = Menu.objects.create(distributor=distributor, restaurant=restaurant, status=MenuStatus.APPROVED)
+        item = Item.objects.create(name="Item", price=10, distributor=distributor, description="Test")
+        menu_item = MenuItem.objects.create(parent_menu=menu, item=item)
+        menu.menu_items.add(menu_item)
+        menu2 = Menu.objects.create(distributor=distributor, restaurant=restaurant, status=MenuStatus.APPROVED)
+        menu_item2 = MenuItem.objects.create(parent_menu=menu2, item=item)
+        menu2.menu_items.add(menu_item2)
+
+        # Call the function being tested
+        result = menus_containing_item(item)
+
+        # Check that the result is a queryset containing the menu
+        self.assertIsInstance(result, QuerySet)
+        self.assertEqual(len(result), 2)
+        self.assertTrue(menu.id in [x.id for x in result])
+
+
+class AddInMenuAttributeTest(TestCase):
+
+    def setUp(self):
+        super().setUp()
+
+    def test_item_present_in_non_approved_menu_with_active_only_false(self):
+        # Arrange
+        distributor = Distributor.objects.create()
+        restaurant = Restaurant.objects.create()
+        item = Item.objects.create(name="Item", price=10, distributor=distributor, description="Test")
+        menu = Menu.objects.create(distributor=distributor, restaurant=restaurant, status=MenuStatus.DRAFT)
+        menu_item = MenuItem.objects.create(parent_menu=menu, item=item)
+
+        # Act
+        add_in_menu_attribute(item, active_only=False)
+
+        # Assert
+        self.assertTrue(hasattr(item, 'in_menu'))
+        self.assertTrue(item.in_menu)
+
+    def test_item_present_in_approved_menu_with_active_only_false(self):
+        # Arrange
+        distributor = Distributor.objects.create()
+        restaurant = Restaurant.objects.create()
+        item = Item.objects.create(name="Item", price=10, distributor=distributor, description="Test")
+        menu = Menu.objects.create(distributor=distributor, restaurant=restaurant, status=MenuStatus.APPROVED)
+        menu_item = MenuItem.objects.create(parent_menu=menu, item=item)
+
+        # Act
+        add_in_menu_attribute(item, active_only=False)
+
+        # Assert
+        self.assertTrue(hasattr(item, 'in_menu'))
+        self.assertTrue(item.in_menu)
+
+    def test_item_present_in_non_approved_menu_with_active_only_true(self):
+        # Arrange
+        distributor = Distributor.objects.create()
+        restaurant = Restaurant.objects.create()
+        item = Item.objects.create(name="Item", price=10, distributor=distributor, description="Test")
+        menu = Menu.objects.create(distributor=distributor, restaurant=restaurant, status=MenuStatus.REJECTED_BY_RESTAURANT)
+        menu_item = MenuItem.objects.create(parent_menu=menu, item=item)
+
+        # Act
+        add_in_menu_attribute(item, active_only=True)
+
+        # Assert
+        self.assertTrue(hasattr(item, 'in_menu'))
+        self.assertFalse(item.in_menu)
+
+    def test_item_present_in_approved_menu_with_active_only_true(self):
+        # Arrange
+        distributor = Distributor.objects.create()
+        restaurant = Restaurant.objects.create()
+        item = Item.objects.create(name="Item", price=10, distributor=distributor, description="Test")
+        menu = Menu.objects.create(distributor=distributor, restaurant=restaurant, status=MenuStatus.APPROVED)
+        menu_item = MenuItem.objects.create(parent_menu=menu, item=item)
+
+        # Act
+        add_in_menu_attribute(item, active_only=True)
+
+        # Assert
+        self.assertTrue(hasattr(item, 'in_menu'))
+        self.assertTrue(item.in_menu)
+
