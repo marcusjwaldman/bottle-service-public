@@ -7,7 +7,7 @@ from partners.forms import ItemForm
 from partners.matches import PartnerMatch
 from partners.models import Partners, Menu, PartnerStatus, MenuItem, Item, MenuStatus
 from .forms import AddressForm, DistributorForm
-from .models import Distributor
+from partners.menu import menus_containing_item, add_in_menu_attribute
 
 
 @bottle_service_auth(roles=[BottleServiceAccountType.DISTRIBUTOR])
@@ -237,19 +237,6 @@ def distributor_edit_items(request):
             item.save()
 
     return redirect('/distributor/distributor-edit-items/')
-
-
-def menus_containing_item(item, active_only=False):
-    if active_only:
-        menus = Menu.objects.filter(menuitem__item=item, status=MenuStatus.APPROVED)
-    else:
-        menus = Menu.objects.filter(menuitem__item=item)
-    return menus
-
-
-def add_in_menu_attribute(item, active_only=False):
-    item.in_menu = len(menus_containing_item(item, active_only)) > 0
-    return item
 
 
 @bottle_service_auth(roles=[BottleServiceAccountType.DISTRIBUTOR])

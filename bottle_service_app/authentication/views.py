@@ -1,6 +1,8 @@
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 import requests
+
+from .exceptions import AuthenticationExpiredException
 from .security import PasswordStrength, VerificationCode
 from authentication.enums import BottleServiceAccountType
 from authentication.session import BottleServiceSession
@@ -27,7 +29,10 @@ def login(request):
     if request.method == "GET":
         # BottleServiceSession.clear_session(request)
         if BottleServiceSession.has_user(request):
-            user_stored = BottleServiceSession.get_user(request)
+            try:
+                user_stored = BottleServiceSession.get_user(request)
+            except AuthenticationExpiredException:
+                return render(request, login_page, {'error': 'Session expired. Please login again.'})
             if not user_stored:
                 return render(request, login_page)
             try:

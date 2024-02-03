@@ -21,3 +21,16 @@ def customer_menu(restaurant):
         item.sort(key=lambda x: x.calculated_price)
 
     return menu_map
+
+
+def menus_containing_item(item, active_only=False):
+    if active_only:
+        menus = Menu.objects.filter(menuitem__item=item, status=MenuStatus.APPROVED)
+    else:
+        menus = Menu.objects.filter(menuitem__item=item)
+    return menus
+
+
+def add_in_menu_attribute(item, active_only=False):
+    item.in_menu = len(menus_containing_item(item, active_only)) > 0
+    return item
