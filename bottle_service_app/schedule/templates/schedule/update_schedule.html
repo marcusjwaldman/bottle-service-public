@@ -8,6 +8,10 @@
           display: inline-block;
         }
 
+        .red {
+            color: red;
+        }
+
         .indent {
             margin-left: 20px;
         }
@@ -80,6 +84,10 @@
 </head>
 <body>
     <h1>Update Schedule</h1>
+    {% if error is not None %}
+        <p class="red">{{ error }}</p>
+    {% endif %}
+
     {% if weekly_schedule is not None %}
         <table>
         <form method="post">
@@ -434,9 +442,10 @@
         </table>
     {% endif %}
 
-    {% if user.account_type.value == BottleServiceAccountType.DISTRIBUTOR %}
+
+    {% if user.account_type == 'BottleServiceAccountType.DISTRIBUTOR' %}
         <a href="{% url 'distributor_home' %}">Cancel</a>
-    {% elif user.account_type.value == BottleServiceAccountType.RESTAURANT %}
+    {% elif user.account_type == 'BottleServiceAccountType.RESTAURANT' %}
         <a href="{% url 'restaurant_home' %}">Cancel</a>
     {% endif %}
     <a href="{% url 'authentication:logout' %}">Logout</a>
