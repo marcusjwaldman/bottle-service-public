@@ -8,6 +8,10 @@
           display: inline-block;
         }
 
+        .indent {
+            margin-left: 20px;
+        }
+
         body {
             font-family: 'Arial', sans-serif;
             margin: 20px;
@@ -76,17 +80,363 @@
 </head>
 <body>
     <h1>Update Schedule</h1>
-    {% if weekly_schedule_form is not None %}
-    <form method="post">
-        {% csrf_token %}
-        {{ weekly_schedule_form.as_p }}
-        <button class="big_button" type="submit">Edit</button>
-    </form>
+    {% if weekly_schedule is not None %}
+        <table>
+        <form method="post">
+            {% csrf_token %}
+            <tr>
+                <td colspan="2">
+                    MONDAY
+                </td>
+            </tr>
+        {% for block in weekly_schedule.monday.time_blocks.all %}
+            <tr>
+                <td>
+                    <div class="indent">
+            {{ block.start_time }}
+                    </div>
+                </td>
+                <td>
+            {{ block.end_time }}
+                </td>
+        {% endfor %}
+            </tr>
+            <tr>
+                <td>
+            <input type="hidden" name="weekly_schedule_id" value="{{ weekly_schedule.id }}">
+            <input type="hidden" name="day_id" value="{{ weekly_schedule.monday.id }}">
+
+            <label for="start_time_monday">Start Time:</label>
+                </td>
+                <td>
+            <input id="start_time_monday" type="time" name="start_time" value="">
+                </td>
+            </tr>
+            <tr>
+                <td>
+            <label for="end_time_monday">End Time:</label>
+                </td>
+                <td>
+            <input id="end_time_monday" type="time" name="end_time" value="">
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+            <button class="big_button" type="submit">Add Time</button>
+                </td>
+            </tr>
+        </form>
+            <tr>
+                <td colspan="2">
+                    &nbsp;
+                </td>
+            </tr>
+
+        <form method="post">
+            {% csrf_token %}
+            <tr>
+                <td colspan="2">
+                    TUESDAY
+                </td>
+            </tr>
+        {% for block in weekly_schedule.tuesday.time_blocks.all %}
+            <tr>
+                <td>
+                    <div class="indent">
+            {{ block.start_time }}
+                    </div>
+                </td>
+                <td>
+            {{ block.end_time }}
+                </td>
+        {% endfor %}
+            </tr>
+            <tr>
+                <td>
+            <input type="hidden" name="weekly_schedule_id" value="{{ weekly_schedule.id }}">
+            <input type="hidden" name="day_id" value="{{ weekly_schedule.tuesday.id }}">
+
+            <label for="start_time_tuesday">Start Time:</label>
+                </td>
+                <td>
+            <input id="start_time_tuesday" type="time" name="start_time" value="">
+                </td>
+            </tr>
+            <tr>
+                <td>
+            <label for="end_time_tuesday">End Time:</label>
+                </td>
+                <td>
+            <input id="end_time_tuesday" type="time" name="end_time" value="">
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+            <button class="big_button" type="submit">Add Time</button>
+                </td>
+            </tr>
+        </form>
+            <tr>
+                <td colspan="2">
+                    &nbsp;
+                </td>
+            </tr>
+
+        <form method="post">
+            {% csrf_token %}
+            <tr>
+                <td colspan="2">
+                    WEDNESDAY
+                </td>
+            </tr>
+        {% for block in weekly_schedule.wednesday.time_blocks.all %}
+            <tr>
+                <td>
+                    <div class="indent">
+            {{ block.start_time }}
+                    </div>
+                </td>
+                <td>
+            {{ block.end_time }}
+                </td>
+        {% endfor %}
+            </tr>
+            <tr>
+                <td>
+            <input type="hidden" name="weekly_schedule_id" value="{{ weekly_schedule.id }}">
+            <input type="hidden" name="day_id" value="{{ weekly_schedule.wednesday.id }}">
+
+            <label for="start_time_wednesday">Start Time:</label>
+                </td>
+                <td>
+            <input id="start_time_wednesday" type="time" name="start_time" value="">
+                </td>
+            </tr>
+            <tr>
+                <td>
+            <label for="end_time_wednesday">End Time:</label>
+                </td>
+                <td>
+            <input id="end_time_wednesday" type="time" name="end_time" value="">
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+            <button class="big_button" type="submit">Add Time</button>
+                </td>
+            </tr>
+        </form>
+            <tr>
+                <td colspan="2">
+                    &nbsp;
+                </td>
+            </tr>
+
+        <form method="post">
+            {% csrf_token %}
+            <tr>
+                <td colspan="2">
+                    THURSDAY
+                </td>
+            </tr>
+        {% for block in weekly_schedule.thursday.time_blocks.all %}
+            <tr>
+                <td>
+                    <div class="indent">
+            {{ block.start_time }}
+                    </div>
+                </td>
+                <td>
+            {{ block.end_time }}
+                </td>
+        {% endfor %}
+            </tr>
+            <tr>
+                <td>
+            <input type="hidden" name="weekly_schedule_id" value="{{ weekly_schedule.id }}">
+            <input type="hidden" name="day_id" value="{{ weekly_schedule.thursday.id }}">
+
+            <label for="start_time_thursday">Start Time:</label>
+                </td>
+                <td>
+            <input id="start_time_thursday" type="time" name="start_time" value="">
+                </td>
+            </tr>
+            <tr>
+                <td>
+            <label for="end_time_thursday">End Time:</label>
+                </td>
+                <td>
+            <input id="end_time_thursday" type="time" name="end_time" value="">
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+            <button class="big_button" type="submit">Add Time</button>
+                </td>
+            </tr>
+        </form>
+            <tr>
+                <td colspan="2">
+                    &nbsp;
+                </td>
+            </tr>
+
+        <form method="post">
+            {% csrf_token %}
+            <tr>
+                <td colspan="2">
+                    FRIDAY
+                </td>
+            </tr>
+        {% for block in weekly_schedule.friday.time_blocks.all %}
+            <tr>
+                <td>
+                    <div class="indent">
+            {{ block.start_time }}
+                    </div>
+                </td>
+                <td>
+            {{ block.end_time }}
+                </td>
+        {% endfor %}
+            </tr>
+            <tr>
+                <td>
+            <input type="hidden" name="weekly_schedule_id" value="{{ weekly_schedule.id }}">
+            <input type="hidden" name="day_id" value="{{ weekly_schedule.friday.id }}">
+
+            <label for="start_time_friday">Start Time:</label>
+                </td>
+                <td>
+            <input id="start_time_friday" type="time" name="start_time" value="">
+                </td>
+            </tr>
+            <tr>
+                <td>
+            <label for="end_time_friday">End Time:</label>
+                </td>
+                <td>
+            <input id="end_time_friday" type="time" name="end_time" value="">
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+            <button class="big_button" type="submit">Add Time</button>
+                </td>
+            </tr>
+        </form>
+            <tr>
+                <td colspan="2">
+                    &nbsp;
+                </td>
+            </tr>
+
+        <form method="post">
+            {% csrf_token %}
+            <tr>
+                <td colspan="2">
+                    SATURDAY
+                </td>
+            </tr>
+        {% for block in weekly_schedule.saturday.time_blocks.all %}
+            <tr>
+                <td>
+                    <div class="indent">
+            {{ block.start_time }}
+                    </div>
+                </td>
+                <td>
+            {{ block.end_time }}
+                </td>
+        {% endfor %}
+            </tr>
+            <tr>
+                <td>
+            <input type="hidden" name="weekly_schedule_id" value="{{ weekly_schedule.id }}">
+            <input type="hidden" name="day_id" value="{{ weekly_schedule.saturday.id }}">
+
+            <label for="start_time_saturday">Start Time:</label>
+                </td>
+                <td>
+            <input id="start_time_saturday" type="time" name="start_time" value="">
+                </td>
+            </tr>
+            <tr>
+                <td>
+            <label for="end_time_saturday">End Time:</label>
+                </td>
+                <td>
+            <input id="end_time_saturday" type="time" name="end_time" value="">
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+            <button class="big_button" type="submit">Add Time</button>
+                </td>
+            </tr>
+        </form>
+            <tr>
+                <td colspan="2">
+                    &nbsp;
+                </td>
+            </tr>
+
+        <form method="post">
+            {% csrf_token %}
+            <tr>
+                <td colspan="2">
+                    SUNDAY
+                </td>
+            </tr>
+        {% for block in weekly_schedule.sunday.time_blocks.all %}
+            <tr>
+                <td>
+                    <div class="indent">
+            {{ block.start_time }}
+                    </div>
+                </td>
+                <td>
+            {{ block.end_time }}
+                </td>
+        {% endfor %}
+            </tr>
+            <tr>
+                <td>
+            <input type="hidden" name="weekly_schedule_id" value="{{ weekly_schedule.id }}">
+            <input type="hidden" name="day_id" value="{{ weekly_schedule.sunday.id }}">
+
+            <label for="start_time_sunday">Start Time:</label>
+                </td>
+                <td>
+            <input id="start_time_sunday" type="time" name="start_time" value="">
+                </td>
+            </tr>
+            <tr>
+                <td>
+            <label for="end_time_sunday">End Time:</label>
+                </td>
+                <td>
+            <input id="end_time_sunday" type="time" name="end_time" value="">
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+            <button class="big_button" type="submit">Add Time</button>
+                </td>
+            </tr>
+        </form>
+            <tr>
+                <td colspan="2">
+                    &nbsp;
+                </td>
+            </tr>
+        </table>
     {% endif %}
 
-    {% if user.account_type == 'distributor' %}
+    {% if user.account_type.value == BottleServiceAccountType.DISTRIBUTOR %}
         <a href="{% url 'distributor_home' %}">Cancel</a>
-    {% elif user.account_type == 'restaurant' %}
+    {% elif user.account_type.value == BottleServiceAccountType.RESTAURANT %}
         <a href="{% url 'restaurant_home' %}">Cancel</a>
     {% endif %}
     <a href="{% url 'authentication:logout' %}">Logout</a>
