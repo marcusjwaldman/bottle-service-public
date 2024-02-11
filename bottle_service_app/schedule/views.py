@@ -72,18 +72,13 @@ def delete_time_block_schedule(request, day, time_block_id):
     if user is not None:
 
         if request.method == 'GET':
-            weekly_schedule = get_weekly_schedule(user)
-            if weekly_schedule is None:
-                raise Exception('Weekly schedule does not exist')
-            user_daily_schedule = get_daily_schedule(weekly_schedule, day)
-            if user_daily_schedule is None:
-                raise Exception('Daily schedule does not exist')
             try:
                 time_block = TimeBlock.objects.get(id=time_block_id)
             except TimeBlock.DoesNotExist:
                 raise Exception('Time block does not exist')
 
-            user_has_access_to_time_block(user_daily_schedule, time_block)
+            user_daily_schedule = user_has_access_to_time_block(user, time_block, day)
+
             time_block.delete()
             condense_daily_schedule(user_daily_schedule.id)
             return redirect('/schedule/update-schedule/')
@@ -91,13 +86,24 @@ def delete_time_block_schedule(request, day, time_block_id):
             raise Exception('Invalid method type')
 
 
-def user_has_access_to_time_block(user_daily_schedule, time_block):
+def user_has_access_to_time_block(user, time_block, day):
+    weekly_schedule = get_weekly_schedule(user)
+    if weekly_schedule is None:
+        raise Exception('Weekly schedule does not exist')
+    user_daily_schedule = get_daily_schedule(weekly_schedule, day)
+    if user_daily_schedule is None:
+        raise Exception('Daily schedule does not exist')
     requested_daily_schedule = time_block.day_schedule
     if user_daily_schedule.id != requested_daily_schedule.id:
         raise PermissionDenied('User does not have access to this time block.')
+    return user_daily_schedule
 
 
 def get_daily_schedule(weekly_schedule, day):
+    if weekly_schedule is None:
+        raise Exception('Weekly schedule cannot be null')
+    if day is None:
+        raise Exception('Day cannot be null')
     if day == 1:
         return weekly_schedule.monday
     elif day == 2:
@@ -112,6 +118,8 @@ def get_daily_schedule(weekly_schedule, day):
         return weekly_schedule.saturday
     elif day == 7:
         return weekly_schedule.sunday
+    else:
+        raise Exception('Invalid day')
 
 
 def get_weekly_schedule(user):
