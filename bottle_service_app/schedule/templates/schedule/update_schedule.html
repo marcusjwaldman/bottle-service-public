@@ -99,16 +99,24 @@
             </tr>
         {% for block in weekly_schedule.monday.time_blocks.all %}
             <tr>
-                <td>
-                    <div class="indent">
-            {{ block.start_time }}
-                    </div>
+                <td colspan="2">
+                    <table>
+                        <tr>
+                            <td>
+                                <div class="indent">
+                                    {{ block.start_time }}
+                                </div>
+                            </td>
+                            <td>
+                                {{ block.end_time }}
+                            </td>
+                            <td>
+                                <a href="{% url 'delete_time_block_schedule' day=1 time_block_id=block.id %}">Delete</a>
+                        </tr>
+                    </table>
                 </td>
-                <td>
-            {{ block.end_time }}
-                </td>
-        {% endfor %}
             </tr>
+        {% endfor %}
             <tr>
                 <td>
             <input type="hidden" name="weekly_schedule_id" value="{{ weekly_schedule.id }}">
@@ -149,14 +157,23 @@
             </tr>
         {% for block in weekly_schedule.tuesday.time_blocks.all %}
             <tr>
-                <td>
-                    <div class="indent">
-            {{ block.start_time }}
-                    </div>
+                <td colspan="2">
+                    <table>
+                        <tr>
+                            <td>
+                                <div class="indent">
+                                    {{ block.start_time }}
+                                </div>
+                            </td>
+                            <td>
+                                {{ block.end_time }}
+                            </td>
+                            <td>
+                                <a href="{% url 'delete_time_block_schedule' day=2 time_block_id=block.id %}">Delete</a>
+                        </tr>
+                    </table>
                 </td>
-                <td>
-            {{ block.end_time }}
-                </td>
+            </tr>
         {% endfor %}
             </tr>
             <tr>
@@ -199,14 +216,23 @@
             </tr>
         {% for block in weekly_schedule.wednesday.time_blocks.all %}
             <tr>
-                <td>
-                    <div class="indent">
-            {{ block.start_time }}
-                    </div>
+                <td colspan="2">
+                    <table>
+                        <tr>
+                            <td>
+                                <div class="indent">
+                                    {{ block.start_time }}
+                                </div>
+                            </td>
+                            <td>
+                                {{ block.end_time }}
+                            </td>
+                            <td>
+                                <a href="{% url 'delete_time_block_schedule' day=3 time_block_id=block.id %}">Delete</a>
+                        </tr>
+                    </table>
                 </td>
-                <td>
-            {{ block.end_time }}
-                </td>
+            </tr>
         {% endfor %}
             </tr>
             <tr>
@@ -249,14 +275,23 @@
             </tr>
         {% for block in weekly_schedule.thursday.time_blocks.all %}
             <tr>
-                <td>
-                    <div class="indent">
-            {{ block.start_time }}
-                    </div>
+                <td colspan="2">
+                    <table>
+                        <tr>
+                            <td>
+                                <div class="indent">
+                                    {{ block.start_time }}
+                                </div>
+                            </td>
+                            <td>
+                                {{ block.end_time }}
+                            </td>
+                            <td>
+                                <a href="{% url 'delete_time_block_schedule' day=4 time_block_id=block.id %}">Delete</a>
+                        </tr>
+                    </table>
                 </td>
-                <td>
-            {{ block.end_time }}
-                </td>
+            </tr>
         {% endfor %}
             </tr>
             <tr>
@@ -299,14 +334,23 @@
             </tr>
         {% for block in weekly_schedule.friday.time_blocks.all %}
             <tr>
-                <td>
-                    <div class="indent">
-            {{ block.start_time }}
-                    </div>
+                <td colspan="2">
+                    <table>
+                        <tr>
+                            <td>
+                                <div class="indent">
+                                    {{ block.start_time }}
+                                </div>
+                            </td>
+                            <td>
+                                {{ block.end_time }}
+                            </td>
+                            <td>
+                                <a href="{% url 'delete_time_block_schedule' day=5 time_block_id=block.id %}">Delete</a>
+                        </tr>
+                    </table>
                 </td>
-                <td>
-            {{ block.end_time }}
-                </td>
+            </tr>
         {% endfor %}
             </tr>
             <tr>
@@ -349,14 +393,23 @@
             </tr>
         {% for block in weekly_schedule.saturday.time_blocks.all %}
             <tr>
-                <td>
-                    <div class="indent">
-            {{ block.start_time }}
-                    </div>
+                <td colspan="2">
+                    <table>
+                        <tr>
+                            <td>
+                                <div class="indent">
+                                    {{ block.start_time }}
+                                </div>
+                            </td>
+                            <td>
+                                {{ block.end_time }}
+                            </td>
+                            <td>
+                                <a href="{% url 'delete_time_block_schedule' day=6 time_block_id=block.id %}">Delete</a>
+                        </tr>
+                    </table>
                 </td>
-                <td>
-            {{ block.end_time }}
-                </td>
+            </tr>
         {% endfor %}
             </tr>
             <tr>
@@ -399,14 +452,23 @@
             </tr>
         {% for block in weekly_schedule.sunday.time_blocks.all %}
             <tr>
-                <td>
-                    <div class="indent">
-            {{ block.start_time }}
-                    </div>
+                <td colspan="2">
+                    <table>
+                        <tr>
+                            <td>
+                                <div class="indent">
+                                    {{ block.start_time }}
+                                </div>
+                            </td>
+                            <td>
+                                {{ block.end_time }}
+                            </td>
+                            <td>
+                                <a href="{% url 'delete_time_block_schedule' day=7 time_block_id=block.id %}">Delete</a>
+                        </tr>
+                    </table>
                 </td>
-                <td>
-            {{ block.end_time }}
-                </td>
+            </tr>
         {% endfor %}
             </tr>
             <tr>

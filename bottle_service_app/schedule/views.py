@@ -1,6 +1,7 @@
 from datetime import datetime
 
-from django.shortcuts import render
+from django.core.exceptions import PermissionDenied
+from django.shortcuts import render, redirect
 
 from authentication.decorators import bottle_service_auth
 from authentication.enums import BottleServiceAccountType
@@ -63,6 +64,54 @@ def update_schedule(request):
             weekly_schedule = get_weekly_schedule(user)
             return render(request, 'schedule/update_schedule.html',
                           {'weekly_schedule': weekly_schedule, 'user': user})
+
+
+@bottle_service_auth(roles=[BottleServiceAccountType.RESTAURANT, BottleServiceAccountType.DISTRIBUTOR])
+def delete_time_block_schedule(request, day, time_block_id):
+    user = BottleServiceSession.get_user(request)
+    if user is not None:
+
+        if request.method == 'GET':
+            weekly_schedule = get_weekly_schedule(user)
+            if weekly_schedule is None:
+                raise Exception('Weekly schedule does not exist')
+            user_daily_schedule = get_daily_schedule(weekly_schedule, day)
+            if user_daily_schedule is None:
+                raise Exception('Daily schedule does not exist')
+            try:
+                time_block = TimeBlock.objects.get(id=time_block_id)
+            except TimeBlock.DoesNotExist:
+                raise Exception('Time block does not exist')
+
+            user_has_access_to_time_block(user_daily_schedule, time_block)
+            time_block.delete()
+            condense_daily_schedule(user_daily_schedule.id)
+            return redirect('/schedule/update-schedule/')
+        else:
+            raise Exception('Invalid method type')
+
+
+def user_has_access_to_time_block(user_daily_schedule, time_block):
+    requested_daily_schedule = time_block.day_schedule
+    if user_daily_schedule.id != requested_daily_schedule.id:
+        raise PermissionDenied('User does not have access to this time block.')
+
+
+def get_daily_schedule(weekly_schedule, day):
+    if day == 1:
+        return weekly_schedule.monday
+    elif day == 2:
+        return weekly_schedule.tuesday
+    elif day == 3:
+        return weekly_schedule.wednesday
+    elif day == 4:
+        return weekly_schedule.thursday
+    elif day == 5:
+        return weekly_schedule.friday
+    elif day == 6:
+        return weekly_schedule.saturday
+    elif day == 7:
+        return weekly_schedule.sunday
 
 
 def get_weekly_schedule(user):

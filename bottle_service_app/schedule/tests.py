@@ -6,6 +6,9 @@ from schedule.models import DaySchedule, TimeBlock
 from schedule.utils import validate_times, condense_daily_schedule
 from django.db import models
 
+from schedule.views import user_has_access_to_time_block
+from django.core.exceptions import PermissionDenied
+
 # Create your tests here.
 class ValidateTimesTest(TestCase):
 
@@ -186,3 +189,20 @@ class CondenseDailyScheduleTest(TestCase):
         self.assertEqual(day_schedule.time_blocks.count(), 1)
         self.assertEqual(day_schedule.time_blocks.first().start_time, datetime.time(8, 0))
         self.assertEqual(day_schedule.time_blocks.first().end_time, datetime.time(12, 0))
+
+
+class TestuserHasAccessToTimeBlock(TestCase):
+
+    def test_user_has_access_to_time_block_true(self):
+        user_daily_schedule = DaySchedule.objects.create()
+        time_block = TimeBlock.objects.create(day_schedule=user_daily_schedule, start_time='08:00', end_time='10:00')
+        self.assertIsNone(user_has_access_to_time_block(user_daily_schedule, time_block))
+
+    def test_user_has_does_not_access_to_time_block_true(self):
+        user_daily_schedule_1 = DaySchedule.objects.create()
+        user_daily_schedule_2 = DaySchedule.objects.create()
+        time_block = TimeBlock.objects.create(day_schedule=user_daily_schedule_1, start_time='08:00', end_time='10:00')
+        with self.assertRaises(PermissionDenied) as context:
+            user_has_access_to_time_block(user_daily_schedule_2, time_block)
+        self.assertEqual(str(context.exception), 'User does not have access to this time block.')
+
