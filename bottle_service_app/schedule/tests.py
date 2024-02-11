@@ -2,7 +2,10 @@ import datetime
 
 from django.test import TestCase
 
-from schedule.models import DaySchedule, TimeBlock
+from authentication.enums import BottleServiceAccountType
+from authentication.models import BottleServiceUser
+from distributor.models import Distributor
+from schedule.models import DaySchedule, TimeBlock, WeeklySchedule, create_new_weekly_schedule
 from schedule.utils import validate_times, condense_daily_schedule
 from django.db import models
 
@@ -192,17 +195,35 @@ class CondenseDailyScheduleTest(TestCase):
 
 
 class TestuserHasAccessToTimeBlock(TestCase):
+    def setUp(self):
+        self.distributor_1 = Distributor.objects.create()
+        self.weekly_schedule_1 = create_new_weekly_schedule()
+        self.day = 1
+        self.user_daily_schedule_1 = self.weekly_schedule_1.monday
+        self.distributor_1.weekly_schedule = self.weekly_schedule_1
+        self.time_block_1 = TimeBlock.objects.create(day_schedule=self.user_daily_schedule_1, start_time='08:00',
+                                                     end_time='10:00')
+        self.user_1 = BottleServiceUser.objects.create(email='test_user@example.com',
+                                                     account_type=BottleServiceAccountType.DISTRIBUTOR,
+                                                     distributor=self.distributor_1)
+
+        self.distributor_2 = Distributor.objects.create()
+        self.weekly_schedule_2 = create_new_weekly_schedule()
+        self.day = 1
+        self.user_daily_schedule_2 = self.weekly_schedule_2.monday
+        self.distributor_2.weekly_schedule = self.weekly_schedule_2
+        self.time_block_2 = TimeBlock.objects.create(day_schedule=self.user_daily_schedule_2, start_time='08:00',
+                                                     end_time='10:00')
+        self.user_2 = BottleServiceUser.objects.create(email='test_user2@example.com',
+                                                     account_type=BottleServiceAccountType.DISTRIBUTOR,
+                                                     distributor=self.distributor_2)
 
     def test_user_has_access_to_time_block_true(self):
-        user_daily_schedule = DaySchedule.objects.create()
-        time_block = TimeBlock.objects.create(day_schedule=user_daily_schedule, start_time='08:00', end_time='10:00')
-        self.assertIsNone(user_has_access_to_time_block(user_daily_schedule, time_block))
+        self.assertEqual(self.user_daily_schedule_1.id,
+                         user_has_access_to_time_block(self.user_1, self.time_block_1, self.day).id)
 
     def test_user_has_does_not_access_to_time_block_true(self):
-        user_daily_schedule_1 = DaySchedule.objects.create()
-        user_daily_schedule_2 = DaySchedule.objects.create()
-        time_block = TimeBlock.objects.create(day_schedule=user_daily_schedule_1, start_time='08:00', end_time='10:00')
         with self.assertRaises(PermissionDenied) as context:
-            user_has_access_to_time_block(user_daily_schedule_2, time_block)
+            user_has_access_to_time_block(self.user_1, self.time_block_2, self.day)
         self.assertEqual(str(context.exception), 'User does not have access to this time block.')
 
