@@ -43,4 +43,3 @@ def validate_times(start_time, end_time):
         raise ValueError('Invalid time format')
     if s_time >= e_time:
         raise ValueError('Start time must be before end time')
-    
