@@ -5,6 +5,9 @@ from distributor.models import Distributor, LocomotionType
 from restaurant.models import Restaurant
 from django.core.exceptions import ValidationError
 
+from schedule.models import create_new_weekly_schedule
+# from schedule.utils import operation_daily_schedule
+
 
 class PartnerStatus(models.Choices):
     MATCHED = 'matched'
@@ -23,6 +26,7 @@ class Partners(models.Model):
     locomotion = models.CharField(max_length=20, choices=LocomotionType.choices)
     minutes_distance = models.IntegerField()
     menu = models.ForeignKey('Menu', on_delete=models.CASCADE, null=True)
+    # operational_schedule = models.ForeignKey('schedule.WeeklySchedule', on_delete=models.CASCADE, null=True)
 
     class Meta:
         unique_together = ('distributor', 'restaurant')
@@ -36,6 +40,30 @@ class Partners(models.Model):
     @property
     def status_enum(self):
         return PartnerStatus(self.status)
+
+    # def update_operational_schedule(self):
+    #     if self.distributor is None or self.restaurant is None:
+    #         self.operational_schedule = None
+    #     elif self.distributor.weekly_schedule is None or self.restaurant.weekly_schedule is None:
+    #         self.operational_schedule = None
+    #     else:
+    #         self.operational_schedule = create_new_weekly_schedule()
+    #         operation_daily_schedule(self.distributor.weekly_schedule.monday, self.restaurant.weekly_schedule.monday,
+    #                                  self.operational_schedule.monday)
+    #         self.operational_schedule.tuesday = operation_daily_schedule(self.distributor.weekly_schedule.tuesday,
+    #                                                                     self.restaurant.weekly_schedule.tuesday)
+    #         self.operational_schedule.wednesday = operation_daily_schedule(self.distributor.weekly_schedule.wednesday,
+    #                                                                     self.restaurant.weekly_schedule.wednesday)
+    #         self.operational_schedule.thursday = operation_daily_schedule(self.distributor.weekly_schedule.thursday,
+    #                                                                     self.restaurant.weekly_schedule.thursday)
+    #         self.operational_schedule.friday = operation_daily_schedule(self.distributor.weekly_schedule.friday,
+    #                                                                     self.restaurant.weekly_schedule.friday)
+    #         self.operational_schedule.saturday = operation_daily_schedule(self.distributor.weekly_schedule.saturday,
+    #                                                                     self.restaurant.weekly_schedule.saturday)
+    #         self.operational_schedule.sunday = operation_daily_schedule(self.distributor.weekly_schedule.sunday,
+    #                                                                     self.restaurant.weekly_schedule.sunday)
+    #
+    #     return self.operational_schedule
 
 
 class MenuStatus(models.Choices):
