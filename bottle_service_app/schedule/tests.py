@@ -6,7 +6,7 @@ from authentication.enums import BottleServiceAccountType
 from authentication.models import BottleServiceUser
 from distributor.models import Distributor
 from schedule.models import DaySchedule, TimeBlock, WeeklySchedule, create_new_weekly_schedule
-from schedule.utils import validate_times, condense_daily_schedule
+from schedule.utils import validate_times, condense_daily_schedule, is_within_operational_hours
 from django.db import models
 
 from schedule.views import user_has_access_to_time_block
@@ -227,3 +227,79 @@ class TestuserHasAccessToTimeBlock(TestCase):
             user_has_access_to_time_block(self.user_1, self.time_block_2, self.day)
         self.assertEqual(str(context.exception), 'User does not have access to this time block.')
 
+
+class TestIsWithinOperationalHours(TestCase):
+    def setUp(self):
+        self.weekly_schedule = create_new_weekly_schedule()
+        self.user_daily_schedule = self.weekly_schedule.monday
+        time_block = TimeBlock.objects.create(day_schedule=self.user_daily_schedule, start_time='09:00',
+                                              end_time='17:00')
+
+    def test_within_time_block(self):
+        # Arrange
+
+        current_time = datetime.datetime(year=2024, month=2, day=12, hour=12, minute=0, second=0) # Monday
+
+        # Act
+        result = is_within_operational_hours(self.weekly_schedule, current_time)
+
+        # Assert
+        self.assertTrue(result)
+
+    def test_before_time_block(self):
+        # Arrange
+
+        current_time = datetime.datetime(year=2024, month=2, day=12, hour=2, minute=0, second=0) # Monday
+
+        # Act
+        result = is_within_operational_hours(self.weekly_schedule, current_time)
+
+        # Assert
+        self.assertFalse(result)
+
+    def test_after_time_block(self):
+        # Arrange
+
+        current_time = datetime.datetime(year=2024, month=2, day=12, hour=22, minute=0, second=0) # Monday
+
+        # Act
+        result = is_within_operational_hours(self.weekly_schedule, current_time)
+
+        # Assert
+        self.assertFalse(result)
+
+    def test_between_time_block(self):
+        # Arrange
+        TimeBlock.objects.create(day_schedule=self.user_daily_schedule, start_time='21:00',
+                                              end_time='23:00')
+
+        current_time = datetime.datetime(year=2024, month=2, day=12, hour=20, minute=0, second=0) # Monday
+
+        # Act
+        result = is_within_operational_hours(self.weekly_schedule, current_time)
+
+        # Assert
+        self.assertFalse(result)
+
+    def test_in_different_day_time_block(self):
+        # Arrange
+        current_time = datetime.datetime(year=2024, month=2, day=13, hour=12, minute=0, second=0) # Tuesday
+
+        # Act
+        result = is_within_operational_hours(self.weekly_schedule, current_time)
+
+        # Assert
+        self.assertFalse(result)
+
+
+    def test_no_time_blocks(self):
+        # Arrange
+        current_time = datetime.datetime(year=2024, month=2, day=13, hour=12, minute=0, second=0) # Tuesday
+
+        weekly_schedule = create_new_weekly_schedule()  # Empty weekly schedule
+
+        # Act
+        result = is_within_operational_hours(weekly_schedule, current_time)
+
+        # Assert
+        self.assertFalse(result)
