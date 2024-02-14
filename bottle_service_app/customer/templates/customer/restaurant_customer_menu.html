@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ restaurant.name }} Menu</title>
+    <style>
+        .inline {
+          display: inline-block;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-color: #f8f8f8;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        td {
+        padding-right: 50px;
+        }
+
+        p {
+            margin-bottom: 1px;
+        }
+
+        ol {
+            margin-bottom: 1px;
+        }
+
+        li {
+            list-style-type: none;
+        }
+
+        form {
+            margin-bottom: 0px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+
+        button {
+            padding: 5px;
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+
+        .big_button {
+            padding: 10px;
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        a {
+            text-decoration: none;
+            color: #007BFF;
+            margin-right: 10px;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>{{ restaurant.name }} Menu</h1>
+    <h3>{{ as_of_time | date:"l, M. j, Y, g:i a" }} <a href="{{ request.path }}">Refresh</a></h3>
+    {% if menu_open %}
+    <h4>This menu is open.</h4>
+    {% else %}
+    <h4 style="color: red;">Menu is closed. Please check back later.</h4>
+    {% endif %}
+
+    {% if menu_map %}
+            <table>
+    {% for section, items in menu_map.items %}
+                <tr>
+    <th colspan="3">{{ section.name }}</th>
+                </tr>
+    <ol>
+        {% for menu_item in items %}
+        <li>
+                <tr>
+                    <td title="{{ item.item.description }}">
+                    {{ menu_item.item.name }}
+                    </td>
+                    <td>
+                    ${{ menu_item.calculated_price }}
+                    </td>
+                    <td>
+                    {{ menu_item.parent_menu.distributor.name }}
+                    </td>
+                    <td>
+                        {% if menu_item.item.out_of_stock %}
+                            <div class="inline" style="margin-right: 10px;">
+                                <span style="color: red;">OUT OF STOCK</span>
+                            </div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if menu_open and menu_item.item_open %}
+                            <div class="inline" style="margin-right: 10px;">
+                                AVAILABLE
+                            </div>
+                        {% else %}
+                            <div class="inline" style="margin-right: 10px;">
+                                <span style="color: red;">NOT AVAILABLE AT THIS TIME</span>
+                            </div>
+                        {% endif %}
+                    </td>
+                </tr>
+        </li>
+        {% endfor %}
+    </ol>
+    {% endfor %}
+            </table>
+    {% else %}
+    <p>No menu items found.</p>
+    {% endif %}
+
+</body>
+</html>

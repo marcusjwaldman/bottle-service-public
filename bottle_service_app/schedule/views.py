@@ -8,7 +8,7 @@ from authentication.enums import BottleServiceAccountType
 from authentication.session import BottleServiceSession
 from partners.models import Menu, MenuStatus
 from schedule.models import WeeklySchedule, create_new_weekly_schedule, DaySchedule, TimeBlock
-from schedule.utils import condense_daily_schedule, validate_times
+from schedule.utils import condense_daily_schedule, validate_times, get_daily_schedule
 
 
 @bottle_service_auth(roles=[BottleServiceAccountType.RESTAURANT, BottleServiceAccountType.DISTRIBUTOR])
@@ -97,29 +97,6 @@ def user_has_access_to_time_block(user, time_block, day):
     if user_daily_schedule.id != requested_daily_schedule.id:
         raise PermissionDenied('User does not have access to this time block.')
     return user_daily_schedule
-
-
-def get_daily_schedule(weekly_schedule, day):
-    if weekly_schedule is None:
-        raise Exception('Weekly schedule cannot be null')
-    if day is None:
-        raise Exception('Day cannot be null')
-    if day == 1:
-        return weekly_schedule.monday
-    elif day == 2:
-        return weekly_schedule.tuesday
-    elif day == 3:
-        return weekly_schedule.wednesday
-    elif day == 4:
-        return weekly_schedule.thursday
-    elif day == 5:
-        return weekly_schedule.friday
-    elif day == 6:
-        return weekly_schedule.saturday
-    elif day == 7:
-        return weekly_schedule.sunday
-    else:
-        raise Exception('Invalid day')
 
 
 def get_weekly_schedule(user):

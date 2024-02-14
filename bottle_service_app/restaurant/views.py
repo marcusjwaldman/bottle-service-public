@@ -148,5 +148,5 @@ def generate_restaurant_menu_qrcode(request):
             img.save(full_file_name)
 
         # Pass the binary data to the template
-        context = {'qrcode_image': qrcode_image_name, 'menu_url': url_to_embed}
+        context = {'qrcode_image': qrcode_image_name, 'menu_url': url_to_embed, 'restaurant': user.restaurant}
         return render(request, 'restaurant/restaurant_menu_qrcode.html', context)
