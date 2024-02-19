@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bottle Service Cart</title>
+</head>
+<body>
+    <h1>Bottle Service Cart</h1>
+
+    <p>Cart items: {{ cart_items }}</p>
+        <ul>
+        {% for order_item in cart_items %}
+            <li>{{ order_item.item.name }} - ${{ order_item.customer_price }} - {{ order_item.quantity }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

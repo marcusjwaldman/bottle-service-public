@@ -124,6 +124,9 @@
                             </div>
                         {% endif %}
                     </td>
+                    <td>
+                    <a href="{% url 'add_to_cart' menu_item.id %}">Add To Cart</a>
+                    </td>
                 </tr>
         </li>
         {% endfor %}

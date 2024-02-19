@@ -5,10 +5,13 @@ from authentication.exceptions import AuthenticationMissingException, Authentica
 from authentication.models import BottleServiceUser
 from django.utils import timezone
 
+from cart.models import CustomerOrder
+
 
 class BottleServiceSession:
     user_obj_key = 'user_obj'
     user_last_accessed_key = 'user_last_accessed'
+    customer_order_id_key = 'customer_order_id'
 
     @staticmethod
     def has_user(request):
@@ -54,3 +57,33 @@ class BottleServiceSession:
     def clear_session(request):
         request.session.pop(BottleServiceSession.user_obj_key, None)
         request.session.pop(BottleServiceSession.user_last_accessed_key, None)
+
+    @staticmethod
+    def store_customer_order_id(request, order_id):
+        request.session[BottleServiceSession.customer_order_id_key] = order_id
+        request.session[BottleServiceSession.user_last_accessed_key] = timezone.now().isoformat()
+
+    @staticmethod
+    def get_customer_order_id(request):
+        if BottleServiceSession.customer_order_id_key in request.session:
+            return request.session[BottleServiceSession.customer_order_id_key]
+        return None
+
+    @staticmethod
+    def get_customer_order(request, restaurant):
+        customer_order = None
+        order_id = BottleServiceSession.get_customer_order_id(request)
+        if order_id:
+            try:
+                customer_order = CustomerOrder.objects.get(pk=order_id)
+                if customer_order.restaurant != restaurant:
+                    print(f'Session customer order {order_id} restaurant menu does not match current restaurant menu. '
+                          f'Creating new order.')
+                    customer_order = None
+            except CustomerOrder.DoesNotExist:
+                customer_order = None
+        if customer_order is None:
+            customer_order = CustomerOrder.objects.create(order_status='empty', total_cost=0,
+                                                          restaurant=restaurant)
+            BottleServiceSession.store_customer_order_id(request, customer_order.id)
+        return customer_order
