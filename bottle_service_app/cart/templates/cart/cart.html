@@ -6,8 +6,9 @@
 </head>
 <body>
     <h1>Bottle Service Cart</h1>
-
-    <p>Cart items: {{ cart_items }}</p>
+    <p><a href="{% url 'customer_restaurant_menu' restaurant.id %}">Back to Menu</a></p>
+    <p>Total: ${{ customer_order.total_cost }}</p>
+    <p>Cart items:</p>
         <ul>
         {% for order_item in cart_items %}
             <li>{{ order_item.item.name }} - ${{ order_item.customer_price }} - {{ order_item.quantity }}</li>

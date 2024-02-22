@@ -19,6 +19,7 @@ def customer_restaurant_menu(request, restaurant_id):
             restaurant = Restaurant.objects.get(id=restaurant_id)
         except Restaurant.DoesNotExist:
             raise Exception('Restaurant does not exist')
+        customer_order = BottleServiceSession.get_customer_order(request, restaurant)
         menu_map = customer_menu(restaurant)
         as_of_time = get_current_datetime()
         menu_open = is_within_operational_hours(restaurant.weekly_schedule, as_of_time)
@@ -26,7 +27,7 @@ def customer_restaurant_menu(request, restaurant_id):
             add_open_status_to_menu_item(menu_map, as_of_time)
         return render(request, 'customer/restaurant_customer_menu.html',
                       {'restaurant': restaurant, 'menu_map': menu_map, 'menu_open': menu_open,
-                       'as_of_time': as_of_time})
+                       'as_of_time': as_of_time, 'customer_order': customer_order})
 
 
 def add_open_status_to_menu_item(menu_map, as_of_time):

@@ -22,27 +22,60 @@ def add_to_cart(request, menu_item_id):
         customer_order.distributor = menu_item.item.distributor
         customer_order.save()
 
-    order_item = OrderItem.objects.create(order=customer_order, item=item, customer_price=menu_item.calculated_price)
-    customer_order.total_cost += order_item.customer_price
-    customer_order.save()
+    order_items = OrderItem.objects.filter(order=customer_order)
+    order_item = get_matching_order_item(order_items, menu_item)
+    if order_item is not None:
+        order_item.quantity += 1
+        order_item.save()
+        customer_order.total_cost += order_item.customer_price
+        customer_order.save()
+    else:
+        order_item = OrderItem.objects.create(order=customer_order, item=item, customer_price=menu_item.calculated_price)
+        customer_order.total_cost += order_item.customer_price
+        customer_order.save()
 
     return redirect(f'/customer/customer-restaurant-menu/{customer_order.restaurant.id}/')
 
 
-# def remove_from_cart(request, cart_item_id):
-#     cart_item = CartItem.objects.get(pk=cart_item_id)
-#     cart_item.delete()
-#     return redirect('cart')
-#
+def remove_from_cart(request, menu_item_id):
+    try:
+        menu_item = MenuItem.objects.get(pk=menu_item_id)
+    except MenuItem.DoesNotExist:
+        raise Http404(f"Menu item {menu_item_id} does not exist")
+    customer_order = BottleServiceSession.get_customer_order(request, menu_item.parent_menu.restaurant)
+
+    order_items = OrderItem.objects.filter(order=customer_order)
+    order_item = get_matching_order_item(order_items, menu_item)
+    if order_item is not None:
+        customer_order.total_cost -= order_item.customer_price
+        customer_order.save()
+        if order_item.quantity > 1:
+            order_item.quantity -= 1
+            order_item.save()
+        else:
+            order_item.delete()
+            if len(order_items) == 1:
+                customer_order.distributor = None
+                customer_order.total_cost = 0
+                customer_order.save()
+    return redirect(f'/customer/customer-restaurant-menu/{customer_order.restaurant.id}/')
+
+
+def get_matching_order_item(order_items, menu_item):
+    for order_item in order_items:
+        if order_item.item == menu_item.item:
+            return order_item
+    return None
+
 def cart(request, restaurant_id):
     try:
         restaurant = Restaurant.objects.get(pk=restaurant_id)
     except Restaurant.DoesNotExist:
         raise Http404(f"Restaurant {restaurant_id} does not exist")
     customer_order = BottleServiceSession.get_customer_order(request, restaurant)
-    items = customer_order.items.all()
     order_items = OrderItem.objects.filter(order=customer_order)
-    return render(request, 'cart/cart.html', {'cart_items': order_items})
+    return render(request, 'cart/cart.html', {'cart_items': order_items, 'restaurant': restaurant,
+                                              'customer_order': customer_order})
 
 # def checkout(request):
 #     cart = Cart.objects.get(user=request.user)
