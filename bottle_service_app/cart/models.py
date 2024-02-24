@@ -7,7 +7,7 @@ from restaurant.models import Restaurant
 
 
 class OrderStatus(models.Choices):
-    EMPTY = 'empty'
+    # EMPTY = 'empty'
     SHOPPING = 'shopping'
     PAYMENT_APPROVED = 'payment-approved'
     PAYMENT_DENIED = 'payment-denied'

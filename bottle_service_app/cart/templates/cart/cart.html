@@ -7,6 +7,7 @@
 <body>
     <h1>{{ restaurant.name }} Cart</h1>
     <p><a href="{% url 'customer_restaurant_menu' restaurant.id %}">Back to Menu</a></p>
+    <p><a href="{% url 'clear_cart' restaurant.id %}">Clear Cart</a></p>
     <p>Total: ${{ customer_order.total_cost }}</p>
     <p>Cart items:</p>
         <ul>

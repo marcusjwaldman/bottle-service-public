@@ -83,7 +83,18 @@ class BottleServiceSession:
             except CustomerOrder.DoesNotExist:
                 customer_order = None
         if customer_order is None:
-            customer_order = CustomerOrder.objects.create(order_status='empty', total_cost=0,
+            customer_order = CustomerOrder.objects.create(order_status='shopping', total_cost=0,
                                                           restaurant=restaurant)
             BottleServiceSession.store_customer_order_id(request, customer_order.id)
         return customer_order
+
+    @staticmethod
+    def clear_cart(request):
+        order_id = BottleServiceSession.get_customer_order_id(request)
+        customer_order = CustomerOrder.objects.prefetch_related('order_items').get(pk=order_id)
+        if customer_order is not None:
+            customer_order.order_items.all().delete()
+            customer_order.total_cost = 0
+            customer_order.order_status = 'cancelled'
+            customer_order.save()
+        request.session.pop(BottleServiceSession.customer_order_id_key, None)

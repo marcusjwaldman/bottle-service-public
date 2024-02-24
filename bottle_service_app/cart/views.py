@@ -79,6 +79,18 @@ def cart(request, restaurant_id):
     return render(request, 'cart/cart.html', {'cart_items': order_items, 'restaurant': restaurant,
                                               'customer_order': customer_order})
 
+
+def clear_cart(request, restaurant_id):
+    try:
+        restaurant = Restaurant.objects.get(pk=restaurant_id)
+    except Restaurant.DoesNotExist:
+        raise Http404(f"Restaurant {restaurant_id} does not exist")
+    BottleServiceSession.clear_cart(request)
+    customer_order = BottleServiceSession.get_customer_order(request, restaurant)
+    order_items = customer_order.order_items.all()
+    return render(request, 'cart/cart.html', {'cart_items': order_items, 'restaurant': restaurant,
+                                              'customer_order': customer_order})
+
 # def checkout(request):
 #     cart = Cart.objects.get(user=request.user)
 #     cart_items = cart.cartitem_set.all()
