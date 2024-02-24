@@ -2,7 +2,7 @@ from django.db import models
 
 from customer.models import Customer
 from distributor.models import Distributor
-from partners.models import Menu, Item
+from partners.models import Item
 from restaurant.models import Restaurant
 
 
@@ -16,6 +16,14 @@ class OrderStatus(models.Choices):
     CANCELLED = 'cancelled'
 
 
+class OrderItem(models.Model):
+    id = models.AutoField(primary_key=True)
+    order = models.ForeignKey('CustomerOrder', on_delete=models.CASCADE)
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    customer_price = models.DecimalField(max_digits=10, decimal_places=2)
+    quantity = models.IntegerField(default=1)
+
+
 # Create your models here.
 class CustomerOrder(models.Model):
     id = models.AutoField(primary_key=True)
@@ -25,14 +33,12 @@ class CustomerOrder(models.Model):
     order_status = models.CharField(max_length=100, null=True)
     restaurant_additional_info = models.TextField(null=True)
     customer_notes = models.TextField(null=True)
-    items = models.ManyToManyField(Item, through='OrderItem') # Remove
+    order_items = models.ManyToManyField(OrderItem)
     total_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
 
-
-class OrderItem(models.Model):
-    id = models.AutoField(primary_key=True)
-    order = models.ForeignKey(CustomerOrder, on_delete=models.CASCADE)
-    item = models.ForeignKey(Item, on_delete=models.CASCADE)
-    customer_price = models.DecimalField(max_digits=10, decimal_places=2)
-    quantity = models.IntegerField(default=1)
+    def order_item_by_item(self, item):
+        for order_item in self.order_items.all():
+            if order_item.item == item.item:
+                return order_item
+        return None
 

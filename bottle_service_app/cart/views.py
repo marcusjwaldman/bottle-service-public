@@ -31,6 +31,7 @@ def add_to_cart(request, menu_item_id):
         customer_order.save()
     else:
         order_item = OrderItem.objects.create(order=customer_order, item=item, customer_price=menu_item.calculated_price)
+        customer_order.order_items.add(order_item)
         customer_order.total_cost += order_item.customer_price
         customer_order.save()
 
@@ -53,6 +54,7 @@ def remove_from_cart(request, menu_item_id):
             order_item.quantity -= 1
             order_item.save()
         else:
+            customer_order.order_items.remove(order_item)
             order_item.delete()
             if len(order_items) == 1:
                 customer_order.distributor = None

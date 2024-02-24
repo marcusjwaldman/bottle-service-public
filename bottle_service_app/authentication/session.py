@@ -75,7 +75,7 @@ class BottleServiceSession:
         order_id = BottleServiceSession.get_customer_order_id(request)
         if order_id:
             try:
-                customer_order = CustomerOrder.objects.get(pk=order_id)
+                customer_order = CustomerOrder.objects.prefetch_related('order_items').get(pk=order_id)
                 if customer_order.restaurant != restaurant:
                     print(f'Session customer order {order_id} restaurant menu does not match current restaurant menu. '
                           f'Creating new order.')

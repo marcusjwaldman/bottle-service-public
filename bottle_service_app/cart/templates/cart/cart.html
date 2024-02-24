@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Bottle Service Cart</title>
+    <title>{{ restaurant.name }} Cart</title>
 </head>
 <body>
-    <h1>Bottle Service Cart</h1>
+    <h1>{{ restaurant.name }} Cart</h1>
     <p><a href="{% url 'customer_restaurant_menu' restaurant.id %}">Back to Menu</a></p>
     <p>Total: ${{ customer_order.total_cost }}</p>
     <p>Cart items:</p>
