@@ -22,7 +22,7 @@ def add_to_cart(request, menu_item_id):
         customer_order.distributor = menu_item.item.distributor
         customer_order.save()
 
-    order_items = OrderItem.objects.filter(order=customer_order)
+    order_items = customer_order.order_items.all()
     order_item = get_matching_order_item(order_items, menu_item)
     if order_item is not None:
         order_item.quantity += 1
@@ -45,7 +45,7 @@ def remove_from_cart(request, menu_item_id):
         raise Http404(f"Menu item {menu_item_id} does not exist")
     customer_order = BottleServiceSession.get_customer_order(request, menu_item.parent_menu.restaurant)
 
-    order_items = OrderItem.objects.filter(order=customer_order)
+    order_items = customer_order.order_items.all()
     order_item = get_matching_order_item(order_items, menu_item)
     if order_item is not None:
         customer_order.total_cost -= order_item.customer_price
@@ -75,7 +75,7 @@ def cart(request, restaurant_id):
     except Restaurant.DoesNotExist:
         raise Http404(f"Restaurant {restaurant_id} does not exist")
     customer_order = BottleServiceSession.get_customer_order(request, restaurant)
-    order_items = OrderItem.objects.filter(order=customer_order)
+    order_items = customer_order.order_items.all()
     return render(request, 'cart/cart.html', {'cart_items': order_items, 'restaurant': restaurant,
                                               'customer_order': customer_order})
 
