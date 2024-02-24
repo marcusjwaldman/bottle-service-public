@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'administration',
     'partners',
     'schedule',
+    'cart',
 ]
 
 MIDDLEWARE = [

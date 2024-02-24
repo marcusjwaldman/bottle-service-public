@@ -19,17 +19,18 @@ def customer_restaurant_menu(request, restaurant_id):
             restaurant = Restaurant.objects.get(id=restaurant_id)
         except Restaurant.DoesNotExist:
             raise Exception('Restaurant does not exist')
+        customer_order = BottleServiceSession.get_customer_order(request, restaurant)
         menu_map = customer_menu(restaurant)
         as_of_time = get_current_datetime()
         menu_open = is_within_operational_hours(restaurant.weekly_schedule, as_of_time)
         if menu_open:
-            add_open_status_to_menu_item(menu_map, as_of_time)
+            add_open_status_and_quantity_to_menu_item(menu_map, as_of_time, customer_order)
         return render(request, 'customer/restaurant_customer_menu.html',
                       {'restaurant': restaurant, 'menu_map': menu_map, 'menu_open': menu_open,
-                       'as_of_time': as_of_time})
+                       'as_of_time': as_of_time, 'customer_order': customer_order})
 
 
-def add_open_status_to_menu_item(menu_map, as_of_time):
+def add_open_status_and_quantity_to_menu_item(menu_map, as_of_time, customer_order):
     distributor_map = dict()
     for category, menu_items in menu_map.items():
         for item in menu_items:
@@ -37,4 +38,9 @@ def add_open_status_to_menu_item(menu_map, as_of_time):
                 distributor_map[item.parent_menu.distributor.id] = is_within_operational_hours(
                     item.parent_menu.distributor.weekly_schedule, as_of_time)
             item.item_open = distributor_map[item.parent_menu.distributor.id]
+            order_item = customer_order.order_item_by_item(item)
+            if order_item is None:
+                item.quantity = 0
+            else:
+                item.quantity = order_item.quantity
 

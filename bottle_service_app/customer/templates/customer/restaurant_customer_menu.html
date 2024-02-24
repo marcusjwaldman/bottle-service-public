@@ -82,6 +82,10 @@
     <h1>{{ restaurant.name }} Menu</h1>
     <h3>{{ as_of_time | date:"l, M. j, Y, g:i a" }} <a href="{{ request.path }}">Refresh</a></h3>
     {% if menu_open %}
+    <h4>Total: ${{ customer_order.total_cost }}</h4>
+    <p><a href="{% url 'cart' restaurant.id %}">Cart</a></p>
+    {% endif %}
+    {% if menu_open %}
     <h4>This menu is open.</h4>
     {% else %}
     <h4 style="color: red;">Menu is closed. Please check back later.</h4>
@@ -98,7 +102,7 @@
         <li>
                 <tr>
                     <td title="{{ item.item.description }}">
-                    {{ menu_item.item.name }}
+                    {{ menu_item.item.name }} {{ menu_item.quantity }}
                     </td>
                     <td>
                     ${{ menu_item.calculated_price }}
@@ -113,17 +117,24 @@
                             </div>
                         {% endif %}
                     </td>
-                    <td>
                         {% if menu_open and menu_item.item_open %}
-                            <div class="inline" style="margin-right: 10px;">
-                                AVAILABLE
-                            </div>
+                            {% if customer_order.distributor is None or menu_item.item.distributor == customer_order.distributor %}
+                                <td>
+                                    <a href="{% url 'add_to_cart' menu_item.id %}">Add To Cart</a>
+                                </td>
+                                <td>
+                                    <a href="{% url 'remove_from_cart' menu_item.id %}">Remove From Cart</a>
+                                </td>
+                            {% else %}
+                                <td colspan="2"></td>
+                            {% endif %}
                         {% else %}
-                            <div class="inline" style="margin-right: 10px;">
-                                <span style="color: red;">NOT AVAILABLE AT THIS TIME</span>
-                            </div>
+                            <td>
+                                <div class="inline" style="margin-right: 10px;">
+                                    <span style="color: red;">NOT AVAILABLE AT THIS TIME</span>
+                                </div>
+                            </td>
                         {% endif %}
-                    </td>
                 </tr>
         </li>
         {% endfor %}
