@@ -23,4 +23,5 @@ urlpatterns = [
     path('order-completed/<int:restaurant_id>/', views.order_completed,
          name='order_completed'),
 
+
 ]

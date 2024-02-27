@@ -36,6 +36,7 @@ class CustomerOrder(models.Model):
     customer_notes = models.TextField(null=True)
     order_items = models.ManyToManyField(OrderItem)
     total_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
+    confirmation_code = models.CharField(max_length=255, null=True)
 
     def order_item_by_item(self, item):
         for order_item in self.order_items.all():

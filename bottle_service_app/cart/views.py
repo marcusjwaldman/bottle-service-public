@@ -168,4 +168,12 @@ def order_rejected(request, restaurant_id):
 
 
 def order_completed(request, restaurant_id):
-    pass
+    try:
+        restaurant = Restaurant.objects.get(pk=restaurant_id)
+    except Restaurant.DoesNotExist:
+        raise Http404(f"Restaurant {restaurant_id} does not exist")
+
+    customer_order = BottleServiceSession.get_customer_order(request, restaurant)
+    BottleServiceSession.clear_cart(request)
+    return render(request, 'cart/order_completed.html', {'customer_order': customer_order,
+                                               'restaurant': restaurant})

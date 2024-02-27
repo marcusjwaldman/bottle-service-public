@@ -1,6 +1,10 @@
+import os
+from django.conf import settings
+import django
 from django.shortcuts import render, redirect
 from authentication.decorators import bottle_service_auth, confirmation_required
 from authentication.enums import BottleServiceAccountType
+from authentication.security import generate_random_digit_string
 from authentication.session import BottleServiceSession
 from cart.models import CustomerOrder, OrderStatus
 from location.tools import GeoLocation
@@ -9,6 +13,9 @@ from partners.matches import PartnerMatch
 from partners.models import Partners, Menu, PartnerStatus, MenuItem, Item, MenuStatus
 from .forms import AddressForm, DistributorForm
 from partners.menu import menus_containing_item, add_in_menu_attribute
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "bottle_service_app.settings")
+django.setup()
 
 
 @bottle_service_auth(roles=[BottleServiceAccountType.DISTRIBUTOR])
@@ -318,6 +325,11 @@ def distributor_view_orders(request):
 
 @bottle_service_auth(roles=[BottleServiceAccountType.DISTRIBUTOR])
 def distributor_update_order(request, order_id, status):
+    if settings.VERIFICATION_CODE_LENGTH:
+        confirmation_len = settings.CONFIRMATION_CODE_LENGTH
+    else:
+        confirmation_len = 5
+
     user = BottleServiceSession.get_user(request)
     if user is not None:
         order = CustomerOrder.objects.get(id=order_id)
@@ -325,8 +337,19 @@ def distributor_update_order(request, order_id, status):
             raise Exception('You are not authorized to view this page')
         if status == 'confirm':
             order.order_status = OrderStatus.CONFIRMED
+            order.confirmation_code = generate_random_digit_string(confirmation_len)
         elif status == 'cancel':
-            order.order_status = OrderStatus.CANCELLED
+            order.order_status = OrderStatus.REJECTED
+        elif status == 'complete':
+            confirmation_code = request.POST.get('confirmation_code')
+            if confirmation_code is None or order.confirmation_code is None or \
+                    confirmation_code.strip() != order.confirmation_code.strip():
+                orders = CustomerOrder.objects.filter(distributor=user.distributor,
+                                                      order_status__in=[OrderStatus.PAYMENT_APPROVED,
+                                                                        OrderStatus.CONFIRMED])
+                return render(request, 'distributor/distributor_view_orders.html',
+                              {'orders': orders, 'error': 'Invalid confirmation code'})
+            order.order_status = OrderStatus.COMPLETED
         order.save()
         return redirect('/distributor/distributor-view-orders/')
     raise Exception('You are not authorized to view this page')

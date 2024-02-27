@@ -8,6 +8,10 @@
           display: inline-block;
         }
 
+        .error {
+            color: red;
+        }
+
         body {
             font-family: 'Arial', sans-serif;
             margin: 20px;
@@ -76,6 +80,11 @@
 </head>
 <body>
     <h1>Customer Orders</h1>
+    <a href="">Refresh</a>
+
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
 
     <p><strong>Orders:</strong></p>
 
@@ -86,8 +95,16 @@
                     <div class="inline" style="margin-right: 10px;">
                     {{ order.restaurant.name }} - {{ order.order_status }} - ${{ order.total_cost }}
                 {% if order.order_status == 'payment-approved' %}
-                <a href="{% url 'distributor_update_order' order.id 'confirm' %}">Confirm</a>
-                <a href="{% url 'distributor_update_order' order.id 'cancel' %}">Cancel</a>
+                    <a href="{% url 'distributor_update_order' order.id 'confirm' %}">Confirm</a>
+                    <a href="{% url 'distributor_update_order' order.id 'cancel' %}">Cancel</a>
+                {% endif %}
+                {% if order.order_status == 'confirmed' %}
+                    <form method="POST" action="{% url 'distributor_update_order' order.id 'complete' %}">
+                        {% csrf_token %}
+                        <label for="confirmation_code">Confirmation Code:</label>
+                        <input type="text" name="confirmation_code" id="confirmation_code">
+                        <button type="submit">Delivered</button>
+                    </form>
                 {% endif %}
                     </div>
                 </p>
