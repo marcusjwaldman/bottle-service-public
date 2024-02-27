@@ -1,8 +1,9 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
 from authentication.decorators import bottle_service_auth
 from authentication.enums import BottleServiceAccountType
 from authentication.session import BottleServiceSession
+from customer.forms import CustomerForm
 from partners.menu import customer_menu
 from restaurant.models import Restaurant
 from schedule.utils import get_current_datetime, is_within_operational_hours
@@ -44,3 +45,28 @@ def add_open_status_and_quantity_to_menu_item(menu_map, as_of_time, customer_ord
             else:
                 item.quantity = order_item.quantity
 
+
+def register_customer(request, restaurant_id):
+    try:
+        restaurant = Restaurant.objects.get(id=restaurant_id)
+    except Restaurant.DoesNotExist:
+        raise Exception('Restaurant does not exist')
+    if request.method == 'GET':
+        customer_form = CustomerForm()
+        return render(request, 'customer/register_customer.html', {'restaurant': restaurant,
+                                                                   'customer_form': customer_form})
+    elif request.method == 'POST':
+        customer_order = BottleServiceSession.get_customer_order(request, restaurant)
+        customer_form = CustomerForm(request.POST)
+        if customer_form.is_valid():
+            customer = customer_form.save(commit=False)
+            customer.save()
+            customer_order.customer = customer
+            customer_order.save()
+            return redirect(f'/cart/checkout/{restaurant_id}/')
+        else:
+            return render(request, 'customer/register_customer.html', {'restaurant': restaurant,
+                                                                       'customer_form': customer_form,
+                                                                       'errors': customer_form.errors})
+    # Error if request is not GET or POST
+    raise Exception('Invalid request')

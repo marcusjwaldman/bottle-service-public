@@ -12,6 +12,7 @@ class OrderStatus(models.Choices):
     PAYMENT_APPROVED = 'payment-approved'
     PAYMENT_DENIED = 'payment-denied'
     CONFIRMED = 'confirmed'
+    REJECTED = 'rejected'
     COMPLETED = 'completed'
     CANCELLED = 'cancelled'
 

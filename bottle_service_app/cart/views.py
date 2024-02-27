@@ -91,9 +91,67 @@ def clear_cart(request, restaurant_id):
     return render(request, 'cart/cart.html', {'cart_items': order_items, 'restaurant': restaurant,
                                               'customer_order': customer_order})
 
-# def checkout(request):
-#     cart = Cart.objects.get(user=request.user)
-#     cart_items = cart.cartitem_set.all()
-#     total_price = sum(item.product.price * item.quantity for item in cart_items)
-#     # Implement your checkout logic here
-#     return render(request, 'checkout.html', {'total_price': total_price})
+
+def checkout(request, restaurant_id):
+    try:
+        restaurant = Restaurant.objects.get(pk=restaurant_id)
+    except Restaurant.DoesNotExist:
+        raise Http404(f"Restaurant {restaurant_id} does not exist")
+
+    customer_order = BottleServiceSession.get_customer_order(request, restaurant)
+    customer = customer_order.customer
+    if customer is None:
+        return redirect(f'/customer/register-customer/{restaurant_id}/')
+
+    if customer_order.order_status == 'shopping':
+        return redirect(f'/cart/process-payment/{restaurant_id}/')
+    if customer_order.order_status == 'payment-denied':
+        return redirect(f'/cart/process-payment/{restaurant_id}/')
+    if customer_order.order_status == 'payment-approved':
+        return redirect(f'/cart/order-processed/{restaurant_id}/')
+    if customer_order.order_status == 'confirmed':
+        return redirect(f'/cart/order-confirmed/{restaurant_id}/')
+    if customer_order.order_status == 'rejected':
+        return redirect(f'/cart/order-rejected/{restaurant_id}/')
+    if customer_order.order_status == 'completed':
+        return redirect(f'/cart/order-completed/{restaurant_id}/')
+
+    BottleServiceSession.clear_cart(request)
+    return redirect(f'/customer/customer-restaurant-menu/{restaurant_id}/')
+
+
+def process_payment(request, restaurant_id):
+    # TODO: Implement payment processing
+    # Stubbed for demo purposes
+    try:
+        restaurant = Restaurant.objects.get(pk=restaurant_id)
+    except Restaurant.DoesNotExist:
+        raise Http404(f"Restaurant {restaurant_id} does not exist")
+
+    customer_order = BottleServiceSession.get_customer_order(request, restaurant)
+    customer_order.order_status = 'payment-approved'
+    customer_order.save()
+    return redirect(f'/cart/checkout/{restaurant_id}/')
+
+
+def order_processed(request, restaurant_id):
+    try:
+        restaurant = Restaurant.objects.get(pk=restaurant_id)
+    except Restaurant.DoesNotExist:
+        raise Http404(f"Restaurant {restaurant_id} does not exist")
+
+    customer_order = BottleServiceSession.get_customer_order(request, restaurant)
+    return render(request, 'cart/order_status.html', {'customer_order': customer_order,
+                                               'restaurant': restaurant})
+
+
+def order_confirmed(request, restaurant_id):
+    pass
+
+
+def order_rejected(request, restaurant_id):
+    pass
+
+
+def order_completed(request, restaurant_id):
+    pass
