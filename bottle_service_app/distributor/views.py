@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from authentication.decorators import bottle_service_auth, confirmation_required
 from authentication.enums import BottleServiceAccountType
 from authentication.session import BottleServiceSession
+from cart.models import CustomerOrder, OrderStatus
 from location.tools import GeoLocation
 from partners.forms import ItemForm
 from partners.matches import PartnerMatch
@@ -273,6 +274,7 @@ def distributor_stock_item(request, item_id, set_stock):
     return redirect(f'/distributor/distributor-edit-items/')
 
 
+@bottle_service_auth(roles=[BottleServiceAccountType.DISTRIBUTOR])
 def distributor_edit_item(request, item_id):
     user = BottleServiceSession.get_user(request)
     if user is not None:
@@ -301,3 +303,30 @@ def update_menus_approved_status(item):
     for menu in menus:
         menu.status = MenuStatus.PENDING_RESTAURANT_APPROVAL
         menu.save()
+
+
+@bottle_service_auth(roles=[BottleServiceAccountType.DISTRIBUTOR])
+def distributor_view_orders(request):
+    user = BottleServiceSession.get_user(request)
+    if user is not None:
+        orders = CustomerOrder.objects.filter(distributor=user.distributor,
+                                              order_status__in=[OrderStatus.PAYMENT_APPROVED, OrderStatus.CONFIRMED])
+        return render(request, 'distributor/distributor_view_orders.html', {'orders': orders})
+
+    raise Exception('You are not authorized to view this page')
+
+
+@bottle_service_auth(roles=[BottleServiceAccountType.DISTRIBUTOR])
+def distributor_update_order(request, order_id, status):
+    user = BottleServiceSession.get_user(request)
+    if user is not None:
+        order = CustomerOrder.objects.get(id=order_id)
+        if order.distributor != user.distributor:
+            raise Exception('You are not authorized to view this page')
+        if status == 'confirm':
+            order.order_status = OrderStatus.CONFIRMED
+        elif status == 'cancel':
+            order.order_status = OrderStatus.CANCELLED
+        order.save()
+        return redirect('/distributor/distributor-view-orders/')
+    raise Exception('You are not authorized to view this page')

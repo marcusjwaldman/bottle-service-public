@@ -7,6 +7,7 @@
 <body>
     <h1>{{ restaurant.name }} Checkout Status</h1>
     <h3>{{ customer_order.order_status }}</h3>
+    <p><a href="{% url 'checkout' restaurant.id %}">Refresh</a></p>
     <p><a href="{% url 'customer_restaurant_menu' restaurant.id %}">Back to Menu</a></p>
     <p>Total: ${{ customer_order.total_cost }}</p>
     <p>Cart items:</p>

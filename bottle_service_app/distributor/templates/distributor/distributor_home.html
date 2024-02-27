@@ -62,6 +62,7 @@
             </div>
             <p><a href="{% url 'update_schedule' %}">Schedule</a></p>
             <p><a href="{% url 'distributor_menus' %}">Menus</a></p>
+            <p><a href="{% url 'distributor_view_orders' %}">Orders</a></p>
     {% endif %}
     <div>
         {% include 'partners/partner_matches_sub.html' with partner_list=partner_list match_type='distributor' %}
