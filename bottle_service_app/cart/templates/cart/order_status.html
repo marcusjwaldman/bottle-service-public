@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ restaurant.name }} Checkout Status</title>
+</head>
+<body>
+    <h1>{{ restaurant.name }} Checkout Status</h1>
+    <h3>{{ customer_order.order_status }}</h3>
+    {% if customer_order.confirmation_code %}
+    <h3>{{ customer_order.confirmation_code }}</h3>
+    {% endif %}
+    <p><a href="{% url 'checkout' restaurant.id %}">Refresh</a></p>
+    <p><a href="{% url 'customer_restaurant_menu' restaurant.id %}">Back to Menu</a></p>
+    <p>Total: ${{ customer_order.total_cost }}</p>
+    <p>Cart items:</p>
+        <ul>
+        {% for order_item in customer_order.order_items.all %}
+            <li>{{ order_item.item.name }} - ${{ order_item.customer_price }} - {{ order_item.quantity }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
