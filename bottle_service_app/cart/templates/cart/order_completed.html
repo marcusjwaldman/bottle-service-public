@@ -11,7 +11,7 @@
     <p>Total: ${{ customer_order.total_cost }}</p>
     <p>Cart items:</p>
         <ul>
-        {% for order_item in customer_order.cart_items.all %}
+        {% for order_item in customer_order.order_items.all %}
             <li>{{ order_item.item.name }} - ${{ order_item.customer_price }} - {{ order_item.quantity }}</li>
         {% endfor %}
     </ul>

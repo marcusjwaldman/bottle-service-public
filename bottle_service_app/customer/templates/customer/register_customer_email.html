@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customer Profile</title>
+    <title>Customer Profile - Email</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -61,20 +61,13 @@
     </style>
 </head>
 <body>
-    <h2>Customer Profile</h2>
+    <h2>Customer Profile - Email</h2>
     <div class="error">{{ customer_form.errors }}</div>
-    <form action="{% url 'register_customer' restaurant.id %}" method="post">
+    <form method="post">
         {% csrf_token %}
 
         <label for="{{ customer_form.email.id_for_label }}">Email:</label>
-        <input type="text" name="email_display" value="{{ customer_form.email.value }}" required id="id_email" disabled>
-        <input type="hidden" name="email" value="{{ customer_form.email.value }}">
-
-        <label for="{{ customer_form.last_name.id_for_label }}">Last Name:</label>
-        {{ customer_form.last_name }}
-
-        <label for="{{ customer_form.first_name.id_for_label }}">First Name:</label>
-        {{ customer_form.first_name }}
+        {{ customer_form.email }}
 
         <button type="submit">Submit</button>
         <a href="{% url 'customer_restaurant_menu' restaurant.id %}">Cancel</a>

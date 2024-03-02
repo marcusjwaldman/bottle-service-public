@@ -99,9 +99,14 @@ def checkout(request, restaurant_id):
         raise Http404(f"Restaurant {restaurant_id} does not exist")
 
     customer_order = BottleServiceSession.get_customer_order(request, restaurant)
+    if customer_order.order_items.count() == 0:
+        return redirect(f'/cart/cart/{restaurant_id}/')
     customer = customer_order.customer
     if customer is None:
-        return redirect(f'/customer/register-customer/{restaurant_id}/')
+        return redirect(f'/customer/register-customer-email/{restaurant_id}/')
+
+    # TODO: Ask for verification code
+    # TODO: Verify customer if not verified
 
     if customer_order.order_status == 'shopping':
         return redirect(f'/cart/process-payment/{restaurant_id}/')
@@ -163,6 +168,7 @@ def order_rejected(request, restaurant_id):
         raise Http404(f"Restaurant {restaurant_id} does not exist")
 
     customer_order = BottleServiceSession.get_customer_order(request, restaurant)
+    BottleServiceSession.clear_cart(request)
     return render(request, 'cart/order_status.html', {'customer_order': customer_order,
                                                'restaurant': restaurant})
 

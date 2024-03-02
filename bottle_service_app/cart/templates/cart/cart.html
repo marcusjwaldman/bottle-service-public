@@ -8,7 +8,9 @@
     <h1>{{ restaurant.name }} Cart</h1>
     <p><a href="{% url 'customer_restaurant_menu' restaurant.id %}">Back to Menu</a></p>
     <p><a href="{% url 'clear_cart' restaurant.id %}">Clear Cart</a></p>
+    {% if cart_items|length > 0 %}
     <p><a href="{% url 'checkout' restaurant.id %}">Checkout</a></p>
+    {% endif %}
     <p>Total: ${{ customer_order.total_cost }}</p>
     <p>Cart items:</p>
         <ul>

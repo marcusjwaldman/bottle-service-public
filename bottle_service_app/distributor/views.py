@@ -338,8 +338,10 @@ def distributor_update_order(request, order_id, status):
         if status == 'confirm':
             order.order_status = OrderStatus.CONFIRMED
             order.confirmation_code = generate_random_digit_string(confirmation_len)
+            # TODO: Send confirmation code email to customer
         elif status == 'cancel':
             order.order_status = OrderStatus.REJECTED
+            # TODO: Send rejection email to customer
         elif status == 'complete':
             confirmation_code = request.POST.get('confirmation_code')
             if confirmation_code is None or order.confirmation_code is None or \
@@ -350,6 +352,8 @@ def distributor_update_order(request, order_id, status):
                 return render(request, 'distributor/distributor_view_orders.html',
                               {'orders': orders, 'error': 'Invalid confirmation code'})
             order.order_status = OrderStatus.COMPLETED
+            # TODO: Send completion email to customer
+            # TODO: Process payment
         order.save()
         return redirect('/distributor/distributor-view-orders/')
     raise Exception('You are not authorized to view this page')
