@@ -69,24 +69,6 @@ def register_customer_email(request, restaurant_id):
         customer_form = CustomerForm(initial=initial_data)
         return render(request, 'customer/register_customer_verification.html',
                       {'restaurant': restaurant, 'customer_form': customer_form})
-        # try:
-        #     customer = Customer.objects.filter(email=email).first()
-        # except Customer.DoesNotExist:
-        #     customer = None
-        #
-        # if customer and customer.verified:
-        #     customer_order = BottleServiceSession.get_customer_order(request, restaurant)
-        #     customer_order.customer = customer
-        #     customer_order.save()
-        #     # TODO: Send email to with a verification link or code to verify email of verified customer
-        #     return redirect(f'/cart/checkout/{restaurant_id}/')
-        # else:
-        #     initial_data = {
-        #         'email': email
-        #     }
-        #     customer_form = CustomerForm(initial=initial_data)
-        #     return render(request, 'customer/register_customer.html', {'restaurant': restaurant,
-        #                                                                'customer_form': customer_form})
 
 
 def register_customer_verification(request, restaurant_id):
@@ -132,10 +114,6 @@ def register_customer(request, restaurant_id):
         restaurant = Restaurant.objects.get(id=restaurant_id)
     except Restaurant.DoesNotExist:
         raise Exception('Restaurant does not exist')
-    # if request.method == 'GET':
-    #     customer_form = CustomerForm()
-    #     return render(request, 'customer/register_customer.html', {'restaurant': restaurant,
-    #                                                                'customer_form': customer_form})
     if request.method == 'POST':
         customer_order = BottleServiceSession.get_customer_order(request, restaurant)
         customer_form = CustomerForm(request.POST)
