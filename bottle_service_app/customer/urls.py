@@ -7,6 +7,8 @@ urlpatterns = [
          name='customer_restaurant_menu'),
     path('register-customer-email/<int:restaurant_id>/', views.register_customer_email,
          name='register_customer_email'),
+    path('register-customer-verification/<int:restaurant_id>/', views.register_customer_verification,
+         name='register_customer_verification'),
     path('register-customer/<int:restaurant_id>/', views.register_customer,
          name='register_customer'),
 
