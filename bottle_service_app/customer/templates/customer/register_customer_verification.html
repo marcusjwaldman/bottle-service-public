@@ -61,13 +61,15 @@
     </style>
 </head>
 <body>
-    <h2>Customer Profile - Email</h2>
-    <div class="error">{{ customer_form.errors }}</div>
-    <form action="{% url 'register_customer_email' restaurant.id %}" method="post">
+    <h2>Customer Profile - Verification</h2>
+    <h3>Check you email for verification code</h3>
+    <div class="error">{{ error }}</div>
+    <form action="{% url 'register_customer_verification' restaurant.id %}" method="post">
         {% csrf_token %}
 
-        <label for="{{ customer_form.email.id_for_label }}">Email:</label>
-        {{ customer_form.email }}
+        <label for="id_verification">Verification Code:</label>
+        <input type="text" name="verification_code" value="" required id="id_verification">
+        <input type="hidden" name="email" value="{{ customer_form.email.value }}">
 
         <button type="submit">Submit</button>
         <a href="{% url 'customer_restaurant_menu' restaurant.id %}">Cancel</a>
