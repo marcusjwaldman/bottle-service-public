@@ -42,3 +42,7 @@ This code is not production-ready and is only intended as a starting point, as s
 * Gracefully Handle Uncaught Exceptions.
 * Use S3 for Static Images (AWS).
 * Fix QRC Bug - If DNS name changes, the old QRC image does not work.
+
+
+**Note**<br>
+To set up and run on AWS review BottleServiceRunbook.md for steps and suggestions.
