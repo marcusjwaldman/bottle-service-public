@@ -1,5 +1,4 @@
 # Django local settings for bottle_service_app project.
-# DJANGO_SETTINGS_MODULE = 'bottle_service_app.settings_aws'
 
 from .settings_base import *
 import os
