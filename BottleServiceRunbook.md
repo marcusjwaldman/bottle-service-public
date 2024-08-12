@@ -54,6 +54,8 @@ create or edit file ~/.bash_profile<br>
 export DJANGO_SETTINGS_MODULE=bottle_service_app.settings_aws<br>
 export DJANGO_SECRET_KEY=xz#24+mqi=$fkb#490$!w5((n^$l$4grmcexz_qr^b69=4zvv_<br>
 
+DJANGO_SECRET_KEY is an example. Please use your own and keep it secret
+
 export DJANGO_ALLOWED_HOSTS="*"<br>
 OR<br>
 export DJANGO_ALLOWED_HOSTS="<IP Address>,<DNS>"<br>

@@ -1,5 +1,4 @@
 # Django local settings for bottle_service_app project.
-# DJANGO_SETTINGS_MODULE = 'bottle_service_app.settings_local'
 import os
 
 from .settings_base import *
