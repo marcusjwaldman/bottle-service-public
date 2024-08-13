@@ -35,7 +35,7 @@ DATABASES = {
         'NAME': 'BottleServiceMariaDB',
         'USER': 'bottle_service_account',
         'PASSWORD': os.environ.get('DB_PASSWORD'),
-        'HOST': 'bottle-service-db.cf4q0skejsur.us-east-1.rds.amazonaws.com',   # Use the hostname or IP address of your MariaDB instance
+        'HOST': '<db_hostname>',   # Use the hostname or IP address of your MariaDB instance
         'PORT': '3306',  # Use the MariaDB port, which is 3306 by default
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",

@@ -51,6 +51,7 @@ print(SECRET_KEY)
     
 
 **Generated Key**:
+
 Example Generated Key: `xz#24+mqi=$fkb#490$!w5((n^$l$4grmcexz_qr^b69=4zvv_`
 
 create or edit file ~/.bash_profile<br>
