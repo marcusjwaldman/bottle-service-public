@@ -21,7 +21,7 @@ Add Custom TCP – 3306 – 0.0.0.0/0<br>
 **Clone Repo**:<br>
 sudo apt update<br>
 sudo apt install git<br> 
-ssh-keygen -t rsa -b 4096 -C "marcusjwaldman@gmail.com"<br>
+ssh-keygen -t rsa -b 4096 -C "`email`"<br>
 eval "$(ssh-agent -s)"<br>
 49  ssh-add ~/.ssh/id_rsa<br>
 less ~/.ssh/id_rsa.pub -> copy<br>
@@ -40,15 +40,18 @@ Make sure all static directories exist<br>
 mkdir media<br>
 
 **Set Environmental Variables**:<br>
-Generates a new Django secret key<br>
-import secrets<br>
+This code will Generate a new Django secret key<br>
+```python
 
-`# Generate a 50-character random string for SECRET_KEY
+import secrets
+# Generate a 50-character random string for SECRET_KEY
 SECRET_KEY = ''.join(secrets.choice('abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)') for i in range(50))
-print(SECRET_KEY)`
+print(SECRET_KEY)
+```
+    
 
 **Generated Key**:
-xz#24+mqi=$fkb#490$!w5((n^$l$4grmcexz_qr^b69=4zvv_<br>
+Example Generated Key: `xz#24+mqi=$fkb#490$!w5((n^$l$4grmcexz_qr^b69=4zvv_`
 
 create or edit file ~/.bash_profile<br>
 export DJANGO_SETTINGS_MODULE=bottle_service_app.settings_aws<br>
@@ -87,7 +90,7 @@ http://ec2-<ip underscored>.compute-1.amazonaws.com:8000/<br>
 MariaDB 10.6<br>
 
 **Connect from EC2 service**:<br>
-mysql -u root -p -h bottle-service-db.cf4q0skejsur.us-east-1.rds.amazonaws.com<br>
+mysql -u root -p -h `database URL`<br>
 
 create database bottle_service_db;<br>
 grant all privileges on bottle_service_db.* TO 'bottle_service_account'@'localhost' identified by 'PWD';<br>
@@ -127,12 +130,12 @@ Update nginx config file: <br>
 sudo vi /etc/nginx/sites-available/bottle_service_app <br>
 `server {
     listen 80;
-    server_name ec2-34-227-99-185.compute-1.amazonaws.com;
+    server_name <ec2 URL>;
     return 301 https://$host$request_uri;
 }
 server {
     listen 443 ssl;
-    server_name ec2-34-227-99-185.compute-1.amazonaws.com;
+    server_name <ec2 URL>;
     ssl_certificate /home/ubuntu/bottle-service/certs/dyob_server.crt;
     ssl_certificate_key /home/ubuntu/bottle-service/certs/dyob_server.key;
     ssl_dhparam /home/ubuntu/bottle-service/certs/dyob-ssl-dhparams.pem;
