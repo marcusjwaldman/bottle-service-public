@@ -6,16 +6,6 @@ from restaurant.models import Restaurant
 from django.core.exceptions import ValidationError
 
 
-# class Weekday(models.Choices):
-#     MONDAY = 1
-#     TUESDAY = 2
-#     WEDNESDAY = 3
-#     THURSDAY = 4
-#     FRIDAY = 5
-#     SATURDAY = 6
-#     SUNDAY = 7
-
-
 class DaySchedule(models.Model):
     id = models.AutoField(primary_key=True)
 
